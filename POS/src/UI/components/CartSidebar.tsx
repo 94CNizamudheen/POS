@@ -1,31 +1,48 @@
-import { Minus, Plus, Banknote, CreditCard, Wallet } from "lucide-react";
+import { useState } from "react";
+import { Minus, Plus, Banknote, CreditCard, Wallet, Send } from "lucide-react";
 import emptyCartImg from "@/assets/empty-cart.png";
 import dishPlaceholder from "@/assets/dish-placeholder.jpg";
 import type { Product } from "@/types/product";
+import { useOrder } from "@/context/OrderContext";
+import type { PaymentMethod } from "@/types/order";
+import OrderSuccessModal from "./OrderSuccessModal";
 
 export interface CartItem extends Product {
   qty: number;
 }
+
+const paymentMethods: { icon: typeof Banknote; label: string; method: PaymentMethod }[] = [
+  { icon: Banknote, label: "Cash", method: "CASH" },
+  { icon: CreditCard, label: "Debit Card", method: "CARD" },
+  { icon: Wallet, label: "E-Wallet", method: "EWALLET" },
+];
 
 interface CartSidebarProps {
   items: CartItem[];
   onIncrease: (id: string) => void;
   onDecrease: (id: string) => void;
   onRemove: (id: string) => void;
+  onClearCart: () => void;
 }
-
-const paymentMethods = [
-  { icon: Banknote, label: "Cash" },
-  { icon: CreditCard, label: "Debit Card" },
-  { icon: Wallet, label: "E-Wallet" },
-];
 
 export default function CartSidebar({
   items,
   onIncrease,
   onDecrease,
   onRemove,
+  onClearCart,
 }: CartSidebarProps) {
+  const {
+    activeOrder,
+    sendToKiosk,
+    completeOrder,
+    completeDirectOrder,
+    isConnected,
+    lastCompletedOrder,
+    clearCompletedOrder,
+  } = useOrder();
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [placing, setPlacing] = useState(false);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
@@ -128,21 +145,63 @@ export default function CartSidebar({
           Payment Method
         </p>
         <div className="grid grid-cols-3 gap-2">
-          {paymentMethods.map(({ icon: Icon, label }) => (
+          {paymentMethods.map(({ icon: Icon, label, method }) => (
             <button
               key={label}
-              className="flex flex-col items-center gap-1 py-2 border border-gray-200 rounded-xl text-xs text-gray-600 hover:border-green-400 hover:bg-green-50 transition"
+              onClick={() => setSelectedMethod(method)}
+              className={`flex flex-col items-center gap-1 py-2 border rounded-xl text-xs transition ${
+                selectedMethod === method
+                  ? "border-green-400 bg-green-50 text-green-700"
+                  : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+              }`}
             >
-              <Icon className="w-5 h-5 text-gray-500" />
+              <Icon className="w-5 h-5" />
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      <button className="w-full py-3 bg-green-400 text-white font-bold rounded-xl hover:bg-green-500 transition text-sm shadow-md shadow-green-100">
-        Place Order
+      <button
+        onClick={() => sendToKiosk(items)}
+        disabled={items.length === 0 || !isConnected}
+        className="w-full py-2.5 flex items-center justify-center gap-2 border-2 border-green-400 text-green-600 font-bold rounded-xl text-sm hover:bg-green-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Send className="w-4 h-4" />
+        Send to Kiosk
       </button>
+
+      <button
+        onClick={async () => {
+          if (!selectedMethod || placing) return;
+          setPlacing(true);
+          try {
+            if (activeOrder) {
+              completeOrder(activeOrder.orderId, selectedMethod);
+            } else {
+              await completeDirectOrder(items, selectedMethod);
+              onClearCart();
+            }
+            setSelectedMethod(null);
+          } finally {
+            setPlacing(false);
+          }
+        }}
+        disabled={items.length === 0 || !selectedMethod || placing}
+        className="w-full py-3 bg-green-400 text-white font-bold rounded-xl hover:bg-green-500 transition text-sm shadow-md shadow-green-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {placing ? "Processing…" : "Place Order"}
+      </button>
+
+      {lastCompletedOrder && (
+        <OrderSuccessModal
+          order={lastCompletedOrder}
+          onClose={() => {
+            clearCompletedOrder();
+            onClearCart();
+          }}
+        />
+      )}
     </aside>
   );
 }

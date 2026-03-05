@@ -1,4 +1,5 @@
 import { Search, Bell, QrCode } from "lucide-react";
+import IncomingOrderBadge from "./IncomingOrderBadge";
 
 export default function Header() {
   return (
@@ -26,10 +27,10 @@ export default function Header() {
         <button className="w-9 h-9 flex items-center justify-center bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
           <QrCode className="w-4 h-4" />
         </button>
-        <button className="w-9 h-9 flex items-center justify-center bg-green-500 text-white rounded-lg hover:bg-green-600 transition relative">
+        <button className="w-9 h-9 flex items-center justify-center bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
           <Bell className="w-4 h-4" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
         </button>
+        <IncomingOrderBadge />
       </div>
 
       <div className="text-right min-w-25">

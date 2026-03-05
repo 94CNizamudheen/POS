@@ -1,5 +1,10 @@
 import { Outlet } from "react-router-dom";
+import { OrderProvider } from "@/context/OrderContext";
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <OrderProvider>
+      <Outlet />
+    </OrderProvider>
+  );
 }

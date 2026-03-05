@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from "react";
-import { mockCombinations } from "../../../../data/mockCombinations";
+import { mockCombinations } from "../../data/mockCombinations";
 import type {
   Product,
   ProductGroup,
