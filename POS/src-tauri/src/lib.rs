@@ -110,6 +110,9 @@ pub fn run() {
             commands::order_store::get_order,
             commands::order_store::get_all_orders,
             commands::order_store::complete_pos_order,
+            commands::order_store::save_held_order,
+            commands::order_store::get_all_held_orders,
+            commands::order_store::delete_held_order,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

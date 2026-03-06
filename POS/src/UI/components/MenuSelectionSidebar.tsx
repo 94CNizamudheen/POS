@@ -9,6 +9,7 @@ import {
   Settings,
   Moon,
   Sun,
+  PauseCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -18,6 +19,7 @@ const navItems = [
   // { icon: Home,          label: "Home",    id: "home",    path: "/"        },
   { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/" },
   { icon: ShoppingBag, label: "Orders", id: "orders", path: "/orders" },
+  { icon: PauseCircle, label: "Hold", id: "held-orders", path: "/held-orders" },
   { icon: Wallet, label: "Wallet", id: "wallet", path: null },
   { icon: History, label: "History", id: "history", path: null },
   { icon: Tag, label: "Promos", id: "promos", path: null },

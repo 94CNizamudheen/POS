@@ -69,9 +69,58 @@ impl OrderStore {
                 owner_terminal_id TEXT, owner_type TEXT,
                 created_at INTEGER, updated_at INTEGER, expires_at INTEGER,
                 completed_at INTEGER, payment_method TEXT, notes TEXT
-            )",
+            );
+            CREATE TABLE IF NOT EXISTS held_orders (
+                id TEXT PRIMARY KEY,
+                order_id TEXT NOT NULL UNIQUE,
+                order_number TEXT NOT NULL,
+                order_json TEXT NOT NULL,
+                total REAL NOT NULL DEFAULT 0,
+                held_at INTEGER NOT NULL
+            );",
         )?;
         Ok(Self { conn, order_counter: 0 })
+    }
+
+    // ── Held-order CRUD ───────────────────────────────────────────────────────
+
+    pub fn save_held_order(&self, held: &HeldOrder) -> SqlResult<()> {
+        self.conn.execute(
+            "INSERT INTO held_orders (id, order_id, order_number, order_json, total, held_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+             ON CONFLICT(order_id) DO UPDATE SET
+               order_json = excluded.order_json,
+               total = excluded.total,
+               held_at = excluded.held_at",
+            params![held.id, held.order_id, held.order_number, held.order_json, held.total, held.held_at],
+        )?;
+        Ok(())
+    }
+
+    pub fn get_all_held_orders(&self) -> SqlResult<Vec<HeldOrder>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, order_id, order_number, order_json, total, held_at
+             FROM held_orders ORDER BY held_at ASC",
+        )?;
+        let rows = stmt.query_map([], |row| {
+            Ok(HeldOrder {
+                id: row.get(0)?,
+                order_id: row.get(1)?,
+                order_number: row.get(2)?,
+                order_json: row.get(3)?,
+                total: row.get(4)?,
+                held_at: row.get(5)?,
+            })
+        })?;
+        Ok(rows.filter_map(Result::ok).collect())
+    }
+
+    pub fn delete_held_order(&self, order_id: &str) -> SqlResult<()> {
+        self.conn.execute(
+            "DELETE FROM held_orders WHERE order_id = ?1",
+            params![order_id],
+        )?;
+        Ok(())
     }
 
     fn next_order_number(&mut self) -> String {
@@ -287,3 +336,20 @@ impl OrderStore {
 }
 
 pub type SharedOrderStore = Arc<Mutex<OrderStore>>;
+
+// ── Held Orders ───────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HeldOrder {
+    pub id: String,
+    #[serde(rename = "orderId")]
+    pub order_id: String,
+    #[serde(rename = "orderNumber")]
+    pub order_number: String,
+    /// Full Order serialised as JSON — restored verbatim on resume
+    #[serde(rename = "orderJson")]
+    pub order_json: String,
+    pub total: f64,
+    #[serde(rename = "heldAt")]
+    pub held_at: i64,
+}

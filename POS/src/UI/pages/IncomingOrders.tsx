@@ -47,7 +47,7 @@ function OrderCard({ order, onClaim }: { order: Order; onClaim: () => void }) {
 
 export default function IncomingOrders() {
   const navigate = useNavigate();
-  const { incomingOrders, claimOrder, notification, clearNotification } = useOrder();
+  const { incomingOrders, activeOrder, claimOrder, notification, clearNotification } = useOrder();
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 font-sans">
@@ -68,6 +68,14 @@ export default function IncomingOrders() {
           )}
         </h1>
       </div>
+
+      {/* Active order hold warning */}
+      {activeOrder && (
+        <div className="mx-6 mt-4 px-4 py-3 bg-yellow-50 border border-yellow-300 rounded-xl text-sm text-yellow-800 font-medium">
+          You have active order <span className="font-extrabold">#{activeOrder.orderNumber}</span> in progress.
+          Claiming a new order will automatically put it on hold — you can resume it from the cart sidebar.
+        </div>
+      )}
 
       {/* Toast notification */}
       {notification && (

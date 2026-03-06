@@ -37,6 +37,7 @@ export default function CartSidebar({
     sendToKiosk,
     completeOrder,
     completeDirectOrder,
+    clearActiveOrder,
     isConnected,
     lastCompletedOrder,
     clearCompletedOrder,
@@ -176,10 +177,13 @@ export default function CartSidebar({
           if (!selectedMethod || placing) return;
           setPlacing(true);
           try {
-            if (activeOrder) {
+            if (activeOrder && activeOrder.status !== "DRAFT") {
+              // Server-tracked KIOSK order — complete via WS
               completeOrder(activeOrder.orderId, selectedMethod);
             } else {
+              // Walk-up sale or resumed DRAFT held cart — complete locally
               await completeDirectOrder(items, selectedMethod);
+              if (activeOrder?.status === "DRAFT") clearActiveOrder();
               onClearCart();
             }
             setSelectedMethod(null);

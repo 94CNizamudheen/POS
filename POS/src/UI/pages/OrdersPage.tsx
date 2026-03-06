@@ -3,32 +3,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { RefreshCw } from "lucide-react";
 import Header from "../components/Header";
 import MenuSelectionSidebar from "../components/MenuSelectionSidebar";
+import OrderCard from "../components/OrderCard";
 import type { Order, OrderStatus } from "@/types/order";
 // import { useNavigate } from "react-router-dom";
 
 type FilterTab = "ALL" | "ACTIVE" | "COMPLETED" | "EXPIRED";
-
-const STATUS_BADGE: Record<OrderStatus, { label: string; cls: string }> = {
-  DRAFT: { label: "Draft", cls: "bg-gray-100 text-gray-600" },
-  TRANSFERRED: { label: "Transferred", cls: "bg-blue-100 text-blue-700" },
-  IN_PROGRESS: { label: "In Progress", cls: "bg-yellow-100 text-yellow-700" },
-  PAYMENT_PENDING: {
-    label: "Payment Pending",
-    cls: "bg-orange-100 text-orange-700",
-  },
-  COMPLETED: { label: "Completed", cls: "bg-green-100 text-green-700" },
-  EXPIRED: { label: "Expired", cls: "bg-red-100 text-red-600" },
-  CANCELLED: { label: "Cancelled", cls: "bg-red-100 text-red-600" },
-};
-
-function formatTime(ts: number) {
-  return new Date(ts).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 const ACTIVE_STATUSES: OrderStatus[] = [
   "DRAFT",
@@ -114,7 +93,7 @@ export default function OrdersPage() {
             </button>
           </div>
 
-          {/* Table */}
+          {/* Grid */}
           <div className="flex-1 overflow-y-auto px-6 py-4">
             {loading ? (
               <div className="flex items-center justify-center h-full text-gray-400 text-sm">
@@ -126,68 +105,10 @@ export default function OrdersPage() {
                 <p className="text-sm font-medium">No orders found</p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100 text-xs text-gray-400 font-semibold uppercase tracking-wide">
-                      <th className="text-left px-5 py-3">Order #</th>
-                      <th className="text-left px-5 py-3">Items</th>
-                      <th className="text-left px-5 py-3">Origin</th>
-                      <th className="text-left px-5 py-3">Status</th>
-                      <th className="text-left px-5 py-3">Payment</th>
-                      <th className="text-right px-5 py-3">Total</th>
-                      <th className="text-right px-5 py-3">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((order, i) => {
-                      const badge = STATUS_BADGE[
-                        order.status as OrderStatus
-                      ] ?? {
-                        label: order.status,
-                        cls: "bg-gray-100 text-gray-600",
-                      };
-                      return (
-                        <tr
-                          key={order.orderId}
-                          className={`border-b border-gray-50 hover:bg-gray-50 transition ${
-                            i === filtered.length - 1 ? "border-0" : ""
-                          }`}
-                        >
-                          <td className="px-5 py-3 font-bold text-gray-800">
-                            #{order.orderNumber}
-                          </td>
-                          <td className="px-5 py-3 text-gray-500 max-w-50">
-                            <p className="truncate">
-                              {order.items
-                                .map((it) => `${it.qty}× ${it.name}`)
-                                .join(", ")}
-                            </p>
-                          </td>
-                          <td className="px-5 py-3 text-gray-400 text-xs">
-                            {order.originTerminal.terminalId}
-                          </td>
-                          <td className="px-5 py-3">
-                            <span
-                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${badge.cls}`}
-                            >
-                              {badge.label}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3 text-gray-500 text-xs uppercase">
-                            {order.paymentMethod ?? "—"}
-                          </td>
-                          <td className="px-5 py-3 text-right font-bold text-green-600">
-                            ${order.total.toFixed(2)}
-                          </td>
-                          <td className="px-5 py-3 text-right text-xs text-gray-400 whitespace-nowrap">
-                            {formatTime(order.createdAt)}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                {filtered.map((order) => (
+                  <OrderCard key={order.orderId} order={order} />
+                ))}
               </div>
             )}
           </div>

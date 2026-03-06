@@ -1,4 +1,4 @@
-use crate::order_store::{Order, OrderLineItem, SharedOrderStore, TerminalIdentity};
+use crate::order_store::{HeldOrder, Order, OrderLineItem, SharedOrderStore, TerminalIdentity};
 use tauri::{command, State};
 
 /// Return all active (non-terminal) orders from the POS order store.
@@ -37,6 +37,44 @@ pub fn get_all_orders(
         .lock()
         .unwrap()
         .get_all_orders(limit.unwrap_or(100))
+        .map_err(|e| e.to_string())
+}
+
+/// Save (or upsert) a held order by its orderId.
+#[command]
+pub fn save_held_order(
+    store: State<'_, SharedOrderStore>,
+    held: HeldOrder,
+) -> Result<(), String> {
+    store
+        .lock()
+        .unwrap()
+        .save_held_order(&held)
+        .map_err(|e| e.to_string())
+}
+
+/// Return all held orders, oldest first.
+#[command]
+pub fn get_all_held_orders(
+    store: State<'_, SharedOrderStore>,
+) -> Result<Vec<HeldOrder>, String> {
+    store
+        .lock()
+        .unwrap()
+        .get_all_held_orders()
+        .map_err(|e| e.to_string())
+}
+
+/// Delete a held order by the original orderId.
+#[command]
+pub fn delete_held_order(
+    store: State<'_, SharedOrderStore>,
+    order_id: String,
+) -> Result<(), String> {
+    store
+        .lock()
+        .unwrap()
+        .delete_held_order(&order_id)
         .map_err(|e| e.to_string())
 }
 
