@@ -25,7 +25,7 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
       <img
         src={getProductImage(product.media)}
         alt={product.name}
-        className="w-full h-28 object-cover"
+        className="w-full h-50 object-cover"
       />
       <div className="p-3 flex flex-col gap-2">
         <p className="text-sm font-bold text-gray-800 line-clamp-2">

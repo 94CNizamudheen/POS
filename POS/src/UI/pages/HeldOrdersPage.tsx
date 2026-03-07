@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, PauseCircle, Trash2 } from "lucide-react";
+import { PauseCircle, Trash2 } from "lucide-react";
 import { useOrder } from "@/context/OrderContext";
 import {
   heldOrderService,
@@ -73,7 +73,9 @@ export default function HeldOrdersPage() {
       {/* Active order notice */}
       {activeOrder && (
         <div className="mx-6 mt-4 px-4 py-3 bg-yellow-50 border border-yellow-300 rounded-xl text-sm text-yellow-800 font-medium">
-          Active order <span className="font-extrabold">#{activeOrder.orderNumber}</span> will be held when you resume another order.
+          Active order{" "}
+          <span className="font-extrabold">#{activeOrder.orderNumber}</span>{" "}
+          will be held when you resume another order.
         </div>
       )}
 
@@ -88,7 +90,9 @@ export default function HeldOrdersPage() {
             <div className="rounded-full bg-amber-500/10 p-6">
               <PauseCircle className="w-12 h-12 text-amber-400 opacity-60" />
             </div>
-            <p className="text-base font-semibold text-gray-500">No held orders</p>
+            <p className="text-base font-semibold text-gray-500">
+              No held orders
+            </p>
             <p className="text-sm text-gray-400">
               Orders put on hold while handling a KIOSK request will appear here
             </p>
@@ -111,7 +115,7 @@ export default function HeldOrdersPage() {
 
                   <div className="p-4 flex items-stretch gap-4 flex-1">
                     {/* Order number block */}
-                    <div className="shrink-0 flex flex-col items-center justify-center bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 min-w-[5rem]">
+                    <div className="shrink-0 flex flex-col items-center justify-center bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 min-w-20">
                       <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-widest leading-none mb-1">
                         Hold
                       </span>
@@ -130,8 +134,12 @@ export default function HeldOrdersPage() {
                           {order ? order.items.length : 0} items
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 truncate">{itemSummary}</p>
-                      <p className="text-xs text-gray-400">{timeAgo(held.heldAt)}</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {itemSummary}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {timeAgo(held.heldAt)}
+                      </p>
                     </div>
                   </div>
 
