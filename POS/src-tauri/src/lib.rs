@@ -7,12 +7,16 @@ use tauri::Manager;
 use tokio::sync::mpsc;
 use websocket::{EventBusState, WebSocketServer, WsState};
 
+/// Shared database path — used by app-level commands (e.g. clear_all_data)
+/// that need a DB connection independently of any specific module.
+pub struct AppDbPath(pub String);
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            // ── Order store (SQLite) ──────────────────────────────────────────
+            // ── Resolve DB path ───────────────────────────────────────────────
             let db_path = app
                 .path()
                 .app_data_dir()
@@ -22,12 +26,16 @@ pub fn run() {
                 })
                 .unwrap_or_else(|_| "./orders.db".to_string());
 
+            // Make the path available to app-level commands independently
+            app.manage(AppDbPath(db_path.clone()));
+
+            // ── Order store (SQLite) ──────────────────────────────────────────
             let order_store = Arc::new(Mutex::new(
                 order_store::OrderStore::new(&db_path)
                     .expect("Failed to initialise order store"),
             ));
 
-            // ── WebSocket server (primary POS only) ───────────────────────────
+            // ── WebSocket server ──────────────────────────────────────────────
             let (event_tx, event_rx) = mpsc::unbounded_channel();
 
             let event_bus = websocket::event_bus::EventBus::new(event_rx);
@@ -35,15 +43,13 @@ pub fn run() {
 
             let ws_server = Arc::new(WebSocketServer::new(event_tx, order_store.clone()));
 
-            let ws_state = WsState {
-                server: ws_server.clone(),
-            };
+            let ws_state = WsState { server: ws_server.clone() };
 
             app.manage(ws_state.clone());
             app.manage(EventBusState { bus: event_bus.clone() });
             app.manage(order_store.clone());
 
-            // Register order routes
+            // Register WS routes
             let event_bus_arc = Arc::new(event_bus.clone());
             let ws_state_arc = Arc::new(ws_state.clone());
             let order_store_for_routes = order_store.clone();
@@ -61,7 +67,7 @@ pub fn run() {
                 event_bus_clone.start().await;
             });
 
-            // Start WS server — always on, listens on all interfaces port 3001
+            // Start WS server on port 3001
             let ws_addr = "0.0.0.0:3001";
             log::info!("Starting WebSocket server on {}", ws_addr);
             tauri::async_runtime::spawn(async move {
@@ -100,12 +106,14 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // ── WebSocket ────────────────────────────────────────────────────
             commands::websocket::broadcast_to_kiosk,
             commands::websocket::broadcast_to_pos,
             commands::websocket::broadcast_to_all,
             commands::websocket::send_to_terminal_cmd,
             commands::websocket::get_connected_terminals,
             commands::websocket::get_server_info,
+            // ── Orders ───────────────────────────────────────────────────────
             commands::order_store::get_active_orders,
             commands::order_store::get_order,
             commands::order_store::get_all_orders,
@@ -113,6 +121,8 @@ pub fn run() {
             commands::order_store::save_held_order,
             commands::order_store::get_all_held_orders,
             commands::order_store::delete_held_order,
+            // ── App state ────────────────────────────────────────────────────
+            commands::app_state::clear_all_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

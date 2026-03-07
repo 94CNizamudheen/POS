@@ -171,7 +171,7 @@ pub async fn register_ws_routes(
                 let order = match order_store.lock().unwrap().create_order(
                     items,
                     &origin,
-                    "TRANSFERRED",
+                    "PENDING_KIOSK",
                     notes,
                 ) {
                     Ok(o) => o,
@@ -269,6 +269,8 @@ pub async fn register_ws_routes(
     }
 
     // ── RELEASE_ORDER: clear owner, broadcast ────────────────────────────────
+    // If POS cancels before the KIOSK accepts (PENDING_KIOSK), delete the order
+    // and broadcast ORDER_CANCELLED so the KIOSK dismisses the banner.
     {
         let ws_state = ws_state.clone();
         let order_store = order_store.clone();
@@ -278,13 +280,62 @@ pub async fn register_ws_routes(
                     Some(id) => id.to_string(),
                     None => return,
                 };
-                let result = order_store.lock().unwrap().release_order(&order_id);
+
+                let store = order_store.lock().unwrap();
+                let current = store.get_order(&order_id).ok().flatten();
+
+                if current.as_ref().map_or(false, |o| o.status == "PENDING_KIOSK") {
+                    // POS recalled before KIOSK acted — remove the order entirely
+                    let _ = store.delete_order(&order_id);
+                    drop(store);
+                    let terminals = ws_state.server.get_terminals();
+                    let msg_cancelled = WsMessage::new(
+                        "ORDER_CANCELLED",
+                        serde_json::json!({ "orderId": order_id }),
+                    );
+                    tokio::spawn(async move {
+                        broadcast_all(&terminals, &msg_cancelled).await;
+                        log::info!("RELEASE_ORDER (PENDING_KIOSK) → deleted + ORDER_CANCELLED");
+                    });
+                } else {
+                    let result = store.release_order(&order_id);
+                    drop(store);
+                    if let Ok(Some(order)) = result {
+                        let terminals = ws_state.server.get_terminals();
+                        let msg_updated =
+                            WsMessage::new("ORDER_UPDATED", serde_json::json!({ "order": order }));
+                        tokio::spawn(async move {
+                            broadcast_all(&terminals, &msg_updated).await;
+                        });
+                    }
+                }
+            })
+            .await;
+    }
+
+    // ── KIOSK_ACCEPTED: KIOSK customer accepted the POS-sent order ───────────
+    // Transitions the order from PENDING_KIOSK → TRANSFERRED, signals POS to
+    // clear its KioskSentBanner.
+    {
+        let ws_state = ws_state.clone();
+        let order_store = order_store.clone();
+        event_bus
+            .subscribe("KIOSK_ACCEPTED", move |msg| {
+                let order_id = match msg.payload.get("orderId").and_then(|v| v.as_str()) {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+
+                let result = order_store.lock().unwrap().accept_kiosk_order(&order_id);
                 if let Ok(Some(order)) = result {
+                    let origin_id = order.origin_terminal.terminal_id.clone();
                     let terminals = ws_state.server.get_terminals();
                     let msg_updated =
                         WsMessage::new("ORDER_UPDATED", serde_json::json!({ "order": order }));
                     tokio::spawn(async move {
-                        broadcast_all(&terminals, &msg_updated).await;
+                        // Notify the originating POS to clear its banner
+                        send_to_terminal(&terminals, &origin_id, &msg_updated).await;
+                        log::info!("KIOSK_ACCEPTED → ORDER_UPDATED sent to POS {}", origin_id);
                     });
                 }
             })
@@ -315,6 +366,77 @@ pub async fn register_ws_routes(
                         WsMessage::new("ORDER_COMPLETED", serde_json::json!({ "order": order }));
                     tokio::spawn(async move {
                         broadcast_all(&terminals, &msg_completed).await;
+                    });
+                }
+            })
+            .await;
+    }
+
+    // ── KIOSK_COMPLETE_ORDER: KIOSK customer paid — save to POS DB ──────────
+    // Self-service: creates a new order with origin=KIOSK then completes it.
+    // POS→KIOSK flow: completes the existing order by orderId.
+    {
+        let ws_state = ws_state.clone();
+        let order_store = order_store.clone();
+        event_bus
+            .subscribe("KIOSK_COMPLETE_ORDER", move |msg| {
+                let sender_id = match msg.sender_id.clone() {
+                    Some(id) => id,
+                    None => return,
+                };
+                let sender_type =
+                    msg.sender_type.clone().unwrap_or_else(|| "KIOSK".to_string());
+
+                let order_id: Option<String> = msg
+                    .payload
+                    .get("orderId")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                let method = msg
+                    .payload
+                    .get("method")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("CASH")
+                    .to_string();
+                let items: Vec<OrderLineItem> = serde_json::from_value(
+                    msg.payload.get("items").cloned().unwrap_or_default(),
+                )
+                .unwrap_or_default();
+
+                let mut store = order_store.lock().unwrap();
+
+                let completed = if let Some(id) = order_id {
+                    // POS→KIOSK accepted flow — complete the existing order
+                    store.complete_order(&id, &method).ok().flatten()
+                } else {
+                    // Pure KIOSK self-service — create then immediately complete
+                    let origin = TerminalIdentity {
+                        terminal_id: sender_id.clone(),
+                        terminal_type: sender_type,
+                    };
+                    match store.create_order(items, &origin, "COMPLETED", None) {
+                        Ok(order) => store
+                            .complete_order(&order.order_id, &method)
+                            .ok()
+                            .flatten(),
+                        Err(e) => {
+                            log::error!("KIOSK_COMPLETE_ORDER create failed: {}", e);
+                            None
+                        }
+                    }
+                };
+
+                drop(store);
+
+                if let Some(order) = completed {
+                    let terminals = ws_state.server.get_terminals();
+                    let msg_completed = WsMessage::new(
+                        "ORDER_COMPLETED",
+                        serde_json::json!({ "order": order }),
+                    );
+                    tokio::spawn(async move {
+                        broadcast_all(&terminals, &msg_completed).await;
+                        log::info!("KIOSK_COMPLETE_ORDER from {} → ORDER_COMPLETED", sender_id);
                     });
                 }
             })

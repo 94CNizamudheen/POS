@@ -1,33 +1,19 @@
 use crate::order_store::{HeldOrder, Order, OrderLineItem, SharedOrderStore, TerminalIdentity};
 use tauri::{command, State};
 
-/// Return all active (non-terminal) orders from the POS order store.
-/// Use this on frontend restart to reconcile state without needing a WS reconnect.
 #[command]
-pub fn get_active_orders(
-    store: State<'_, SharedOrderStore>,
-) -> Result<Vec<Order>, String> {
-    store
-        .lock()
-        .unwrap()
-        .get_active_orders()
-        .map_err(|e| e.to_string())
+pub fn get_active_orders(store: State<'_, SharedOrderStore>) -> Result<Vec<Order>, String> {
+    store.lock().unwrap().get_active_orders().map_err(|e| e.to_string())
 }
 
-/// Return a single order by ID.
 #[command]
 pub fn get_order(
     store: State<'_, SharedOrderStore>,
     order_id: String,
 ) -> Result<Option<Order>, String> {
-    store
-        .lock()
-        .unwrap()
-        .get_order(&order_id)
-        .map_err(|e| e.to_string())
+    store.lock().unwrap().get_order(&order_id).map_err(|e| e.to_string())
 }
 
-/// Return all orders (active + completed), newest first, up to `limit` rows.
 #[command]
 pub fn get_all_orders(
     store: State<'_, SharedOrderStore>,
@@ -40,46 +26,28 @@ pub fn get_all_orders(
         .map_err(|e| e.to_string())
 }
 
-/// Save (or upsert) a held order by its orderId.
 #[command]
 pub fn save_held_order(
     store: State<'_, SharedOrderStore>,
     held: HeldOrder,
 ) -> Result<(), String> {
-    store
-        .lock()
-        .unwrap()
-        .save_held_order(&held)
-        .map_err(|e| e.to_string())
+    store.lock().unwrap().save_held_order(&held).map_err(|e| e.to_string())
 }
 
-/// Return all held orders, oldest first.
 #[command]
-pub fn get_all_held_orders(
-    store: State<'_, SharedOrderStore>,
-) -> Result<Vec<HeldOrder>, String> {
-    store
-        .lock()
-        .unwrap()
-        .get_all_held_orders()
-        .map_err(|e| e.to_string())
+pub fn get_all_held_orders(store: State<'_, SharedOrderStore>) -> Result<Vec<HeldOrder>, String> {
+    store.lock().unwrap().get_all_held_orders().map_err(|e| e.to_string())
 }
 
-/// Delete a held order by the original orderId.
 #[command]
 pub fn delete_held_order(
     store: State<'_, SharedOrderStore>,
     order_id: String,
 ) -> Result<(), String> {
-    store
-        .lock()
-        .unwrap()
-        .delete_held_order(&order_id)
-        .map_err(|e| e.to_string())
+    store.lock().unwrap().delete_held_order(&order_id).map_err(|e| e.to_string())
 }
 
 /// Create a walk-up POS order and immediately mark it completed.
-/// Used when a cashier rings up items directly at the POS without a KIOSK order.
 #[command]
 pub fn complete_pos_order(
     store: State<'_, SharedOrderStore>,

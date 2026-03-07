@@ -2,6 +2,7 @@
 
 export type OrderStatus =
   | "DRAFT"
+  | "PENDING_KIOSK"
   | "TRANSFERRED"
   | "IN_PROGRESS"
   | "PAYMENT_PENDING"
@@ -56,9 +57,12 @@ export type WsMessageType =
   | "CLAIM_REJECTED"
   | "SEND_TO_KIOSK"
   | "ORDER_ASSIGNED"
+  | "KIOSK_ACCEPTED"
+  | "KIOSK_COMPLETE_ORDER"
   | "UPDATE_ORDER"
   | "ORDER_UPDATED"
   | "RELEASE_ORDER"
+  | "ORDER_CANCELLED"
   | "COMPLETE_ORDER"
   | "ORDER_COMPLETED"
   | "ORDER_EXPIRED"

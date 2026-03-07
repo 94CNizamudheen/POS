@@ -1,8 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { RefreshCw, Wifi, WifiOff, Monitor, Smartphone } from "lucide-react";
-import Header from "../components/Header";
-import MenuSelectionSidebar from "../components/MenuSelectionSidebar";
+import {
+  RefreshCw,
+  Wifi,
+  WifiOff,
+  Monitor,
+  Smartphone,
+  Trash2,
+} from "lucide-react";
+import ClearDataModal from "../components/settings/ClearDataModal";
 
 interface ServerInfo {
   ip: string;
@@ -20,6 +26,7 @@ export default function SettingsPage() {
   const [terminals, setTerminals] = useState<TerminalInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [polling, setPolling] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -44,7 +51,9 @@ export default function SettingsPage() {
   useEffect(() => {
     setPolling(true);
     const id = setInterval(async () => {
-      const connected = await invoke<TerminalInfo[]>("get_connected_terminals").catch(() => []);
+      const connected = await invoke<TerminalInfo[]>(
+        "get_connected_terminals",
+      ).catch(() => []);
       setTerminals(connected);
     }, 5000);
     return () => {
@@ -57,12 +66,8 @@ export default function SettingsPage() {
   const posCount = terminals.filter((t) => t.terminalType === "POS").length;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 font-sans">
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <MenuSelectionSidebar />
-
-        <main className="flex-1 overflow-y-auto px-8 py-6">
+    <>
+      <main className="flex-1 overflow-y-auto px-8 py-6">
           <h1 className="text-lg font-bold text-gray-800 mb-6">Settings</h1>
 
           {/* Connection Details */}
@@ -72,11 +77,17 @@ export default function SettingsPage() {
             </h2>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               {loading ? (
-                <div className="px-6 py-8 text-center text-sm text-gray-400">Loading…</div>
+                <div className="px-6 py-8 text-center text-sm text-gray-400">
+                  Loading…
+                </div>
               ) : serverInfo ? (
                 <div className="divide-y divide-gray-50">
                   <Row label="Local IP Address" value={serverInfo.ip} mono />
-                  <Row label="WebSocket Port" value={String(serverInfo.port)} mono />
+                  <Row
+                    label="WebSocket Port"
+                    value={String(serverInfo.port)}
+                    mono
+                  />
                   <Row
                     label="WebSocket URL"
                     value={serverInfo.wsUrl}
@@ -94,7 +105,7 @@ export default function SettingsPage() {
           </section>
 
           {/* Connected Terminals */}
-          <section>
+          <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Connected Terminals
@@ -106,7 +117,9 @@ export default function SettingsPage() {
                 onClick={fetchAll}
                 className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-green-600 transition font-medium"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${polling ? "animate-spin" : ""}`} />
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${polling ? "animate-spin" : ""}`}
+                />
                 Refresh
               </button>
             </div>
@@ -115,12 +128,18 @@ export default function SettingsPage() {
             <div className="flex gap-3 mb-4">
               <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-xl px-4 py-2 shadow-sm">
                 <Smartphone className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-bold text-gray-700">{kioskCount}</span>
-                <span className="text-xs text-gray-400">Kiosk{kioskCount !== 1 ? "s" : ""}</span>
+                <span className="text-sm font-bold text-gray-700">
+                  {kioskCount}
+                </span>
+                <span className="text-xs text-gray-400">
+                  Kiosk{kioskCount !== 1 ? "s" : ""}
+                </span>
               </div>
               <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-xl px-4 py-2 shadow-sm">
                 <Monitor className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-bold text-gray-700">{posCount}</span>
+                <span className="text-sm font-bold text-gray-700">
+                  {posCount}
+                </span>
                 <span className="text-xs text-gray-400">POS</span>
               </div>
             </div>
@@ -142,7 +161,10 @@ export default function SettingsPage() {
                   </thead>
                   <tbody>
                     {terminals.map((t) => (
-                      <tr key={t.terminalId} className="border-b border-gray-50 last:border-0">
+                      <tr
+                        key={t.terminalId}
+                        className="border-b border-gray-50 last:border-0"
+                      >
                         <td className="px-5 py-3 font-mono text-xs text-gray-700">
                           {t.terminalId}
                         </td>
@@ -170,9 +192,39 @@ export default function SettingsPage() {
               )}
             </div>
           </section>
-        </main>
-      </div>
-    </div>
+
+          {/* Danger Zone */}
+          <section>
+            <h2 className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">
+              Danger Zone
+            </h2>
+            <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">
+                    Clear All Data
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Permanently delete all orders and held orders from this
+                    device.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowClearModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-500 border border-red-200 text-sm font-semibold hover:bg-red-100 transition-colors shrink-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear Data
+                </button>
+              </div>
+            </div>
+          </section>
+      </main>
+
+      {showClearModal && (
+        <ClearDataModal onClose={() => setShowClearModal(false)} />
+      )}
+    </>
   );
 }
 

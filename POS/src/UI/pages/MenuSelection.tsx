@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import Header from "../components/Header";
-import MenuSelectionSidebar from "../components/MenuSelectionSidebar";
-import Products from "../components/Products";
-import CartSidebar, { type CartItem } from "../components/CartSidebar";
-import CategoryTab from "../components/CategoryTab";
-import ProductGroupTab from "../components/ProductGroupTab";
-import KioskSentBanner from "../components/KioskSentBanner";
+import Header from "../components/menu-selection/Header";
+import Products from "../components/menu-selection/Products";
+import CartSidebar, {
+  type CartItem,
+} from "../components/menu-selection/CartSidebar";
+import CategoryTab from "../components/menu-selection/CategoryTab";
+import ProductGroupTab from "../components/menu-selection/ProductGroupTab";
+import KioskSentBanner from "../components/menu-selection/KioskSentBanner";
 import { ProductProvider } from "@/context/ProductContext";
 import type { Product } from "@/types/product";
 import { useOrder } from "@/context/OrderContext";
 
 export default function MenuSelection() {
-  const { activeOrder, updateOrder, lastCompletedOrder, stashWalkupCart, popWalkupCart, kioskAcceptedAt } = useOrder();
+  const {
+    activeOrder,
+    updateOrder,
+    lastCompletedOrder,
+    stashWalkupCart,
+    popWalkupCart,
+    kioskAcceptedAt,
+  } = useOrder();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Refs so closures (mount/unmount effects) always see the latest values
@@ -32,7 +40,7 @@ export default function MenuSelection() {
         stashWalkupCart(cartItemsRef.current);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Reset cart when a WS-based order completes
@@ -116,42 +124,37 @@ export default function MenuSelection() {
   return (
     <ProductProvider>
       <KioskSentBanner />
-      <div className="flex flex-col h-screen bg-gray-50 font-sans">
-        <Header />
-        {activeOrder && (
-          <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 text-sm font-semibold text-yellow-800">
-            Editing order #{activeOrder.orderNumber} — changes sync to KIOSK in
-            real-time
-          </div>
-        )}
-
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left nav sidebar */}
-          <MenuSelectionSidebar />
-
-          {/* Center: group tabs on top, then category + products */}
-          <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Product group tabs — top */}
-            <div className="px-4 pt-3 pb-2 border-b border-gray-100 bg-white">
-              <ProductGroupTab />
-            </div>
-
-            {/* Category (left) + Products (right) */}
-            <div className="flex flex-1 overflow-hidden">
-              <CategoryTab />
-              <Products onAdd={handleAdd} />
-            </div>
-          </div>
-
-          {/* Cart */}
-          <CartSidebar
-            items={cartItems}
-            onIncrease={handleIncrease}
-            onDecrease={handleDecrease}
-            onRemove={handleRemove}
-            onClearCart={() => setCartItems([])}
-          />
+      <Header />
+      {activeOrder && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 text-sm font-semibold text-yellow-800">
+          Editing order #{activeOrder.orderNumber} — changes sync to KIOSK in
+          real-time
         </div>
+      )}
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Center: group tabs on top, then category + products */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Product group tabs — top */}
+          <div className="px-4 pt-3 pb-2 border-b border-gray-100 bg-white">
+            <ProductGroupTab />
+          </div>
+
+          {/* Category (left) + Products (right) */}
+          <div className="flex flex-1 overflow-hidden">
+            <CategoryTab />
+            <Products onAdd={handleAdd} />
+          </div>
+        </div>
+
+        {/* Cart */}
+        <CartSidebar
+          items={cartItems}
+          onIncrease={handleIncrease}
+          onDecrease={handleDecrease}
+          onRemove={handleRemove}
+          onClearCart={() => setCartItems([])}
+        />
       </div>
     </ProductProvider>
   );

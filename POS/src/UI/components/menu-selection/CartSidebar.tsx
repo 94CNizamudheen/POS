@@ -11,7 +11,11 @@ export interface CartItem extends Product {
   qty: number;
 }
 
-const paymentMethods: { icon: typeof Banknote; label: string; method: PaymentMethod }[] = [
+const paymentMethods: {
+  icon: typeof Banknote;
+  label: string;
+  method: PaymentMethod;
+}[] = [
   { icon: Banknote, label: "Cash", method: "CASH" },
   { icon: CreditCard, label: "Debit Card", method: "CARD" },
   { icon: Wallet, label: "E-Wallet", method: "EWALLET" },
@@ -42,7 +46,9 @@ export default function CartSidebar({
     lastCompletedOrder,
     clearCompletedOrder,
   } = useOrder();
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(
+    null,
+  );
   const [placing, setPlacing] = useState(false);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const tax = subtotal * 0.1;

@@ -2,6 +2,7 @@ import type { Order, OrderStatus } from "@/types/order";
 
 const STATUS_BADGE: Record<OrderStatus, { label: string; cls: string }> = {
   DRAFT: { label: "Draft", cls: "bg-gray-100 text-gray-600" },
+  PENDING_KIOSK: { label: "Pending Kiosk", cls: "bg-purple-100 text-purple-700" },
   TRANSFERRED: { label: "Transferred", cls: "bg-blue-100 text-blue-700" },
   IN_PROGRESS: { label: "In Progress", cls: "bg-yellow-100 text-yellow-700" },
   PAYMENT_PENDING: { label: "Payment Pending", cls: "bg-orange-100 text-orange-700" },
@@ -25,13 +26,22 @@ export default function OrderCard({ order }: { order: Order }) {
     cls: "bg-gray-100 text-gray-600",
   };
 
+  const isKioskOrder = order.originTerminal.type === "KIOSK";
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <span className="font-extrabold text-gray-900 text-sm">
-          #{order.orderNumber}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-extrabold text-gray-900 text-sm">
+            #{order.orderNumber}
+          </span>
+          {isKioskOrder && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-100">
+              KIOSK
+            </span>
+          )}
+        </div>
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${badge.cls}`}>
           {badge.label}
         </span>

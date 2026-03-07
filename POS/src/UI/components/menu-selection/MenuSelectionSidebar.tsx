@@ -45,8 +45,22 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
 
   return (
     <aside className="w-[10%] min-w-40 h-full bg-white border-r border-gray-100 flex flex-col items-center py-4 gap-2">
+      {/* Restaurant logo */}
+      <div className="flex flex-col items-center mb-1 px-2">
+        <span className="text-xl font-extrabold text-center leading-tight">
+          <span className="text-gray-800">Res</span>
+          <span className="text-green-500">t</span>
+          <span className="text-gray-800">aurant</span>
+        </span>
+        <p className="text-[10px] text-gray-400 font-medium tracking-wide">
+          POS System
+        </p>
+      </div>
+      <div className="w-3/4 h-px bg-gray-100 mb-1" />
+
+      {/* Cashier */}
       <div className="flex flex-col items-center mb-4">
-        <div className="w-10 h-10 rounded-2xl overflow-hidden mb-2">
+        <div className="w-8 h-8 rounded-2xl overflow-hidden mb-2">
           <img
             src={userPng}
             alt="cashier"

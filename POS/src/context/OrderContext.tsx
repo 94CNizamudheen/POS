@@ -1,15 +1,14 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
-import type { Order, WsMessage, OrderLineItem, PaymentMethod } from "@/types/order";
+import type {
+  Order,
+  WsMessage,
+  OrderLineItem,
+  PaymentMethod,
+} from "@/types/order";
 import { heldOrderService } from "@/services/held-order.service";
-import type { CartItem } from "@/UI/components/CartSidebar";
+import type { CartItem } from "@/UI/components/menu-selection/CartSidebar";
 import { orderEventBus } from "@/services/orderWebSocket/orderEventBus";
 import { orderWebSocketService } from "@/services/orderWebSocket/orderWebSocket.service";
 
@@ -44,7 +43,10 @@ interface OrderContextValue {
   clearActiveOrder: () => void;
   updateOrder: (orderId: string, items: CartItem[]) => void;
   completeOrder: (orderId: string, method: PaymentMethod) => void;
-  completeDirectOrder: (items: CartItem[], method: PaymentMethod) => Promise<void>;
+  completeDirectOrder: (
+    items: CartItem[],
+    method: PaymentMethod,
+  ) => Promise<void>;
   releaseOrder: (orderId: string) => void;
 }
 
@@ -67,7 +69,9 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
-  const [lastCompletedOrder, setLastCompletedOrder] = useState<Order | null>(null);
+  const [lastCompletedOrder, setLastCompletedOrder] = useState<Order | null>(
+    null,
+  );
 
   const [kioskAcceptedAt, setKioskAcceptedAt] = useState(0);
   const [kioskSentOrder, setKioskSentOrder] = useState<Order | null>(null);
@@ -128,7 +132,8 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
           setIsConnected(true);
           const myId = orderWebSocketService.getTerminalId();
           const incoming = msg.payload.activeOrders.filter(
-            (o) => o.status === "TRANSFERRED" && o.originTerminal.type === "KIOSK",
+            (o) =>
+              o.status === "TRANSFERRED" && o.originTerminal.type === "KIOSK",
           );
           setIncomingOrders(incoming);
 
@@ -144,7 +149,9 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         "ORDER_AVAILABLE",
         (msg: WsMessage<{ order: Order }>) => {
           setIncomingOrders((prev) => {
-            const already = prev.some((o) => o.orderId === msg.payload.order.orderId);
+            const already = prev.some(
+              (o) => o.orderId === msg.payload.order.orderId,
+            );
             return already ? prev : [...prev, msg.payload.order];
           });
         },
@@ -156,7 +163,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         (msg: WsMessage<{ order: Order }>) => {
           const order = msg.payload.order;
           // Hold the current server-tracked active order (if any)
-          if (activeOrderRef.current && activeOrderRef.current.orderId !== order.orderId) {
+          if (
+            activeOrderRef.current &&
+            activeOrderRef.current.orderId !== order.orderId
+          ) {
             heldOrderService.save(activeOrderRef.current).catch(console.error);
           }
           // Hold the walk-up cart stashed by MenuSelection on unmount (if any)
@@ -165,7 +175,9 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
             walkupCartRef.current = [];
           }
           setActiveOrder(order);
-          setIncomingOrders((prev) => prev.filter((o) => o.orderId !== order.orderId));
+          setIncomingOrders((prev) =>
+            prev.filter((o) => o.orderId !== order.orderId),
+          );
           navigate("/");
         },
       ),
@@ -196,7 +208,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
           // Track SEND_TO_KIOSK orders: first UPDATE = server confirmation,
           // subsequent UPDATEs = item edits from KIOSK customer,
           // update with no ownerTerminal = KIOSK customer released/accepted
-          if (updated.originTerminal.terminalId === myId && updated.originTerminal.type === "POS") {
+          if (
+            updated.originTerminal.terminalId === myId &&
+            updated.originTerminal.type === "POS"
+          ) {
             if (kioskSentOrderIdRef.current === updated.orderId) {
               if (!updated.ownerTerminal) {
                 // Released — clear POS cart and banner
@@ -219,7 +234,9 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
           );
           // Remove from incoming if it's now claimed
           if (updated.ownerTerminal) {
-            setIncomingOrders((prev) => prev.filter((o) => o.orderId !== updated.orderId));
+            setIncomingOrders((prev) =>
+              prev.filter((o) => o.orderId !== updated.orderId),
+            );
           }
         },
       ),
@@ -240,12 +257,26 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         "ORDER_EXPIRED",
         (msg: WsMessage<{ orderId: string }>) => {
           const { orderId } = msg.payload;
-          setIncomingOrders((prev) => prev.filter((o) => o.orderId !== orderId));
+          setIncomingOrders((prev) =>
+            prev.filter((o) => o.orderId !== orderId),
+          );
           // Also remove from persistent held store if it expired while held
           heldOrderService.delete(orderId).catch(() => {});
           if (activeOrderRef.current?.orderId === orderId) {
             setActiveOrder(null);
           }
+          if (kioskSentOrderIdRef.current === orderId) {
+            kioskSentOrderIdRef.current = null;
+            setKioskSentOrder(null);
+          }
+        },
+      ),
+
+      // KIOSK rejected the order (or POS cancelled before KIOSK acted) — clear banner
+      orderEventBus.subscribe(
+        "ORDER_CANCELLED",
+        (msg: WsMessage<{ orderId: string }>) => {
+          const { orderId } = msg.payload;
           if (kioskSentOrderIdRef.current === orderId) {
             kioskSentOrderIdRef.current = null;
             setKioskSentOrder(null);
@@ -310,7 +341,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
 
   function resumeHeldOrder(order: Order) {
     // Hold the current active order before switching
-    if (activeOrderRef.current && activeOrderRef.current.orderId !== order.orderId) {
+    if (
+      activeOrderRef.current &&
+      activeOrderRef.current.orderId !== order.orderId
+    ) {
       heldOrderService.save(activeOrderRef.current).catch(console.error);
     }
     // Remove the resumed order from hold and make it active

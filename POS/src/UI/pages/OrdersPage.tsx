@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { RefreshCw } from "lucide-react";
-import Header from "../components/Header";
-import MenuSelectionSidebar from "../components/MenuSelectionSidebar";
-import OrderCard from "../components/OrderCard";
+import OrderCard from "../components/order/OrderCard";
 import type { Order, OrderStatus } from "@/types/order";
-// import { useNavigate } from "react-router-dom";
 
-type FilterTab = "ALL" | "ACTIVE" | "COMPLETED" | "EXPIRED";
+type FilterTab = "ALL" | "ACTIVE" | "COMPLETED" | "EXPIRED" | "KIOSK";
 
 const ACTIVE_STATUSES: OrderStatus[] = [
   "DRAFT",
@@ -17,7 +14,6 @@ const ACTIVE_STATUSES: OrderStatus[] = [
 ];
 
 export default function OrdersPage() {
-  // const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [loading, setLoading] = useState(true);
@@ -45,26 +41,28 @@ export default function OrdersPage() {
     if (filter === "COMPLETED") return o.status === "COMPLETED";
     if (filter === "EXPIRED")
       return o.status === "EXPIRED" || o.status === "CANCELLED";
+    if (filter === "KIOSK")
+      return o.originTerminal.type === "KIOSK" && o.status === "COMPLETED";
     return true;
   });
 
-  const tabs: { id: FilterTab; label: string }[] = [
-    { id: "ALL", label: "All" },
+  const kioskCount = orders.filter(
+    (o) => o.originTerminal.type === "KIOSK" && o.status === "COMPLETED",
+  ).length;
+
+  const tabs: { id: FilterTab; label: string; count?: number }[] = [
+    { id: "ALL", label: "All", count: orders.length },
     { id: "ACTIVE", label: "Active" },
     { id: "COMPLETED", label: "Completed" },
     { id: "EXPIRED", label: "Expired / Cancelled" },
+    { id: "KIOSK", label: "KIOSK Orders", count: kioskCount },
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 font-sans">
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <MenuSelectionSidebar activeNav="order" />
-
-        <main className="flex-1 flex flex-col overflow-hidden">
+    <main className="flex-1 flex flex-col overflow-hidden">
           {/* Toolbar */}
           <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between gap-4">
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               {tabs.map((t) => (
                 <button
                   key={t.id}
@@ -76,8 +74,8 @@ export default function OrdersPage() {
                   }`}
                 >
                   {t.label}
-                  {t.id === "ALL" && (
-                    <span className="ml-1.5 opacity-70">({orders.length})</span>
+                  {t.count !== undefined && (
+                    <span className="ml-1.5 opacity-70">({t.count})</span>
                   )}
                 </button>
               ))}
@@ -112,8 +110,6 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
-        </main>
-      </div>
-    </div>
+    </main>
   );
 }

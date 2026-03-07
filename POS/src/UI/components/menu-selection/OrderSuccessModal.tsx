@@ -1,6 +1,5 @@
 import { CheckCircle, Banknote, CreditCard, Wallet } from "lucide-react";
 import type { Order, PaymentMethod } from "@/types/order";
-import { useOrder } from "@/context/OrderContext";
 
 const paymentIcon: Record<PaymentMethod, typeof Banknote> = {
   CASH: Banknote,
@@ -29,7 +28,9 @@ export default function OrderSuccessModal({ order, onClose }: Props) {
         {/* Header */}
         <div className="bg-green-400 px-6 py-6 flex flex-col items-center gap-2">
           <CheckCircle className="w-14 h-14 text-white" strokeWidth={1.5} />
-          <h2 className="text-white text-xl font-bold tracking-wide">Order Complete!</h2>
+          <h2 className="text-white text-xl font-bold tracking-wide">
+            Order Complete!
+          </h2>
           <span className="text-green-100 text-sm font-medium">
             #{order.orderNumber}
           </span>
@@ -38,7 +39,10 @@ export default function OrderSuccessModal({ order, onClose }: Props) {
         {/* Items */}
         <div className="px-6 py-4 max-h-48 overflow-y-auto border-b border-gray-100">
           {order.items.map((item) => (
-            <div key={item.productId} className="flex justify-between text-sm py-1">
+            <div
+              key={item.productId}
+              className="flex justify-between text-sm py-1"
+            >
               <span className="text-gray-700">
                 {item.name} <span className="text-gray-400">× {item.qty}</span>
               </span>
@@ -68,7 +72,9 @@ export default function OrderSuccessModal({ order, onClose }: Props) {
         {/* Payment method */}
         <div className="px-6 py-3 flex items-center gap-2 text-sm text-gray-600 border-b border-gray-100">
           <PayIcon className="w-4 h-4 text-green-500" />
-          <span>Paid via <strong>{paymentLabel[method]}</strong></span>
+          <span>
+            Paid via <strong>{paymentLabel[method]}</strong>
+          </span>
         </div>
 
         {/* Close */}

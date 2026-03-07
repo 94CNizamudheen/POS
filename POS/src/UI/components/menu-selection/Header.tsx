@@ -1,17 +1,9 @@
 import { Search, Bell, QrCode } from "lucide-react";
-import IncomingOrderBadge from "./IncomingOrderBadge";
+import IncomingOrderBadge from "../order/IncomingOrderBadge";
 
 export default function Header() {
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-4 sticky top-0 z-50 shadow-sm">
-      <div className="flex items-center gap-1 min-w-40">
-        <span className="text-2xl font-extrabold">
-          <span className="text-gray-800">Res</span>
-          <span className="text-green-500">t</span>
-          <span className="text-gray-800">aurant</span>
-        </span>
-      </div>
-
       <div className="flex items-center gap-2 ml-auto">
         <div className="flex-1 max-w-xl relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />

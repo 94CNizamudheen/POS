@@ -255,6 +255,21 @@ impl OrderStore {
         self.get_order(order_id)
     }
 
+    pub fn accept_kiosk_order(&self, order_id: &str) -> SqlResult<Option<Order>> {
+        let now = chrono::Utc::now().timestamp_millis();
+        self.conn.execute(
+            "UPDATE orders SET status='TRANSFERRED', updated_at=?1
+             WHERE order_id=?2 AND status='PENDING_KIOSK'",
+            params![now, order_id],
+        )?;
+        self.get_order(order_id)
+    }
+
+    pub fn delete_order(&self, order_id: &str) -> SqlResult<()> {
+        self.conn.execute("DELETE FROM orders WHERE order_id=?1", params![order_id])?;
+        Ok(())
+    }
+
     pub fn release_order(&self, order_id: &str) -> SqlResult<Option<Order>> {
         let now = chrono::Utc::now().timestamp_millis();
         self.conn.execute(
@@ -273,6 +288,34 @@ impl OrderStore {
             params![now, method, now, order_id],
         )?;
         self.get_order(order_id)
+    }
+
+    /// Clears every user table in the database automatically.
+    /// Queries sqlite_master to discover all tables — no hardcoded list needed.
+    /// Any table added in the future is cleared automatically.
+    pub fn clear_all_data(&self) -> SqlResult<()> {
+        // Discover all user tables (excludes SQLite internal tables)
+        let mut stmt = self.conn.prepare(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+        )?;
+        let tables: Vec<String> = stmt
+            .query_map([], |row| row.get(0))?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        self.conn.execute("PRAGMA foreign_keys = OFF", [])?;
+
+        for table in &tables {
+            match self.conn.execute(&format!("DELETE FROM {}", table), []) {
+                Ok(n) => log::info!("Cleared {} rows from {}", n, table),
+                Err(e) => log::warn!("Failed to clear {}: {}", table, e),
+            }
+        }
+
+        self.conn.execute("PRAGMA foreign_keys = ON", [])?;
+
+        log::info!("All data cleared ({} tables)", tables.len());
+        Ok(())
     }
 
     pub fn expire_stale_orders(&self) -> SqlResult<Vec<(String, String)>> {

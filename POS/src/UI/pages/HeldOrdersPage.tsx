@@ -50,7 +50,7 @@ export default function HeldOrdersPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 font-sans">
+    <div className="flex flex-col flex-1 overflow-hidden">
       {/* Header */}
       <div className="h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-3 sticky top-0 z-10 shadow-sm">
         <button
