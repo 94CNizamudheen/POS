@@ -3,8 +3,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { RefreshCw } from "lucide-react";
 import OrderCard from "../components/order/OrderCard";
 import type { Order, OrderStatus } from "@/types/order";
+import { useOrder } from "@/context/OrderContext";
 
-type FilterTab = "ALL" | "ACTIVE" | "COMPLETED" | "EXPIRED" | "KIOSK";
+type FilterTab = "ALL" | "ACTIVE" | "COMPLETED" | "EXPIRED" | "TRANSFERRED" | "KIOSK_TRANSFER";
 
 const ACTIVE_STATUSES: OrderStatus[] = [
   "DRAFT",
@@ -14,6 +15,7 @@ const ACTIVE_STATUSES: OrderStatus[] = [
 ];
 
 export default function OrdersPage() {
+  const { posSentToKioskCompletedIds, kioskToPosTransferCompletedIds, kioskToPosToKioskCompletedIds } = useOrder();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [loading, setLoading] = useState(true);
@@ -34,28 +36,37 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
+  function getTransferDirection(o: Order): "pos-to-kiosk" | "kiosk-to-pos" | "kiosk-to-pos-to-kiosk" | undefined {
+    if (o.status !== "COMPLETED") return undefined;
+    if (kioskToPosToKioskCompletedIds.has(o.orderId)) return "kiosk-to-pos-to-kiosk";
+    if (posSentToKioskCompletedIds.has(o.orderId)) return "pos-to-kiosk";
+    if (kioskToPosTransferCompletedIds.has(o.orderId)) return "kiosk-to-pos";
+    return undefined;
+  }
+
   const filtered = orders.filter((o) => {
     if (filter === "ALL") return true;
-    if (filter === "ACTIVE")
-      return ACTIVE_STATUSES.includes(o.status as OrderStatus);
-    if (filter === "COMPLETED") return o.status === "COMPLETED";
-    if (filter === "EXPIRED")
-      return o.status === "EXPIRED" || o.status === "CANCELLED";
-    if (filter === "KIOSK")
-      return o.originTerminal.type === "KIOSK" && o.status === "COMPLETED";
+    if (filter === "ACTIVE") return ACTIVE_STATUSES.includes(o.status as OrderStatus);
+    if (filter === "COMPLETED") return o.status === "COMPLETED" && !getTransferDirection(o);
+    if (filter === "EXPIRED") return o.status === "EXPIRED" || o.status === "CANCELLED";
+    if (filter === "TRANSFERRED") return getTransferDirection(o) === "pos-to-kiosk" || getTransferDirection(o) === "kiosk-to-pos";
+    if (filter === "KIOSK_TRANSFER") return getTransferDirection(o) === "kiosk-to-pos-to-kiosk";
     return true;
   });
 
-  const kioskCount = orders.filter(
-    (o) => o.originTerminal.type === "KIOSK" && o.status === "COMPLETED",
-  ).length;
+  const transferredCount = orders.filter((o) => {
+    const d = getTransferDirection(o);
+    return d === "pos-to-kiosk" || d === "kiosk-to-pos";
+  }).length;
+  const kioskTransferCount = orders.filter((o) => getTransferDirection(o) === "kiosk-to-pos-to-kiosk").length;
 
   const tabs: { id: FilterTab; label: string; count?: number }[] = [
     { id: "ALL", label: "All", count: orders.length },
     { id: "ACTIVE", label: "Active" },
     { id: "COMPLETED", label: "Completed" },
+    { id: "TRANSFERRED", label: "Transferred", count: transferredCount },
+    { id: "KIOSK_TRANSFER", label: "Kiosk ↔ POS", count: kioskTransferCount },
     { id: "EXPIRED", label: "Expired / Cancelled" },
-    { id: "KIOSK", label: "KIOSK Orders", count: kioskCount },
   ];
 
   return (
@@ -105,7 +116,11 @@ export default function OrdersPage() {
             ) : (
               <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {filtered.map((order) => (
-                  <OrderCard key={order.orderId} order={order} />
+                  <OrderCard
+                    key={order.orderId}
+                    order={order}
+                    transferDirection={getTransferDirection(order)}
+                  />
                 ))}
               </div>
             )}

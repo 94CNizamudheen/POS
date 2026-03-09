@@ -268,6 +268,168 @@ pub async fn register_ws_routes(
             .await;
     }
 
+    // ── ADD_ITEM: add or increment item in shared order ──────────────────────
+    {
+        let ws_state = ws_state.clone();
+        let order_store = order_store.clone();
+        event_bus
+            .subscribe("ADD_ITEM", move |msg| {
+                let sender_id = match msg.sender_id.clone() {
+                    Some(id) => id,
+                    None => return,
+                };
+                let sender_type = msg.sender_type.clone().unwrap_or_else(|| "POS".to_string());
+                let order_id = match msg.payload.get("orderId").and_then(|v| v.as_str()) {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+                let item: OrderLineItem = match serde_json::from_value(
+                    msg.payload.get("item").cloned().unwrap_or_default(),
+                ) {
+                    Ok(i) => i,
+                    Err(_) => return,
+                };
+                let updater = TerminalIdentity { terminal_id: sender_id, terminal_type: sender_type };
+                let result = order_store.lock().unwrap().add_item(&order_id, item, &updater);
+                if let Ok(Some(updated)) = result {
+                    let origin_id = updated.origin_terminal.terminal_id.clone();
+                    let owner_id = updated.owner_terminal.as_ref().map(|t| t.terminal_id.clone());
+                    let terminals = ws_state.server.get_terminals();
+                    let msg_updated = WsMessage::new("ORDER_UPDATED", serde_json::json!({ "order": updated }));
+                    tokio::spawn(async move {
+                        send_to_terminal(&terminals, &origin_id, &msg_updated).await;
+                        if let Some(owner) = owner_id {
+                            if owner != origin_id {
+                                send_to_terminal(&terminals, &owner, &msg_updated).await;
+                            }
+                        }
+                    });
+                }
+            })
+            .await;
+    }
+
+    // ── REMOVE_ITEM: remove item from shared order ────────────────────────────
+    {
+        let ws_state = ws_state.clone();
+        let order_store = order_store.clone();
+        event_bus
+            .subscribe("REMOVE_ITEM", move |msg| {
+                let sender_id = match msg.sender_id.clone() {
+                    Some(id) => id,
+                    None => return,
+                };
+                let sender_type = msg.sender_type.clone().unwrap_or_else(|| "POS".to_string());
+                let order_id = match msg.payload.get("orderId").and_then(|v| v.as_str()) {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+                let product_id = match msg.payload.get("productId").and_then(|v| v.as_str()) {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+                let updater = TerminalIdentity { terminal_id: sender_id, terminal_type: sender_type };
+                let result = order_store.lock().unwrap().remove_item(&order_id, &product_id, &updater);
+                if let Ok(Some(updated)) = result {
+                    let origin_id = updated.origin_terminal.terminal_id.clone();
+                    let owner_id = updated.owner_terminal.as_ref().map(|t| t.terminal_id.clone());
+                    let terminals = ws_state.server.get_terminals();
+                    let msg_updated = WsMessage::new("ORDER_UPDATED", serde_json::json!({ "order": updated }));
+                    tokio::spawn(async move {
+                        send_to_terminal(&terminals, &origin_id, &msg_updated).await;
+                        if let Some(owner) = owner_id {
+                            if owner != origin_id {
+                                send_to_terminal(&terminals, &owner, &msg_updated).await;
+                            }
+                        }
+                    });
+                }
+            })
+            .await;
+    }
+
+    // ── CHANGE_QTY: set item quantity in shared order ─────────────────────────
+    {
+        let ws_state = ws_state.clone();
+        let order_store = order_store.clone();
+        event_bus
+            .subscribe("CHANGE_QTY", move |msg| {
+                let sender_id = match msg.sender_id.clone() {
+                    Some(id) => id,
+                    None => return,
+                };
+                let sender_type = msg.sender_type.clone().unwrap_or_else(|| "POS".to_string());
+                let order_id = match msg.payload.get("orderId").and_then(|v| v.as_str()) {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+                let product_id = match msg.payload.get("productId").and_then(|v| v.as_str()) {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+                let qty = match msg.payload.get("qty").and_then(|v| v.as_i64()) {
+                    Some(q) => q,
+                    None => return,
+                };
+                let updater = TerminalIdentity { terminal_id: sender_id, terminal_type: sender_type };
+                let result = order_store.lock().unwrap().change_qty(&order_id, &product_id, qty, &updater);
+                if let Ok(Some(updated)) = result {
+                    let origin_id = updated.origin_terminal.terminal_id.clone();
+                    let owner_id = updated.owner_terminal.as_ref().map(|t| t.terminal_id.clone());
+                    let terminals = ws_state.server.get_terminals();
+                    let msg_updated = WsMessage::new("ORDER_UPDATED", serde_json::json!({ "order": updated }));
+                    tokio::spawn(async move {
+                        send_to_terminal(&terminals, &origin_id, &msg_updated).await;
+                        if let Some(owner) = owner_id {
+                            if owner != origin_id {
+                                send_to_terminal(&terminals, &owner, &msg_updated).await;
+                            }
+                        }
+                    });
+                }
+            })
+            .await;
+    }
+
+    // ── APPLY_DISCOUNT: apply fixed discount to shared order ──────────────────
+    {
+        let ws_state = ws_state.clone();
+        let order_store = order_store.clone();
+        event_bus
+            .subscribe("APPLY_DISCOUNT", move |msg| {
+                let sender_id = match msg.sender_id.clone() {
+                    Some(id) => id,
+                    None => return,
+                };
+                let sender_type = msg.sender_type.clone().unwrap_or_else(|| "POS".to_string());
+                let order_id = match msg.payload.get("orderId").and_then(|v| v.as_str()) {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+                let amount = match msg.payload.get("amount").and_then(|v| v.as_f64()) {
+                    Some(a) => a,
+                    None => return,
+                };
+                let updater = TerminalIdentity { terminal_id: sender_id, terminal_type: sender_type };
+                let result = order_store.lock().unwrap().apply_discount(&order_id, amount, &updater);
+                if let Ok(Some(updated)) = result {
+                    let origin_id = updated.origin_terminal.terminal_id.clone();
+                    let owner_id = updated.owner_terminal.as_ref().map(|t| t.terminal_id.clone());
+                    let terminals = ws_state.server.get_terminals();
+                    let msg_updated = WsMessage::new("ORDER_UPDATED", serde_json::json!({ "order": updated }));
+                    tokio::spawn(async move {
+                        send_to_terminal(&terminals, &origin_id, &msg_updated).await;
+                        if let Some(owner) = owner_id {
+                            if owner != origin_id {
+                                send_to_terminal(&terminals, &owner, &msg_updated).await;
+                            }
+                        }
+                    });
+                }
+            })
+            .await;
+    }
+
     // ── RELEASE_ORDER: clear owner, broadcast ────────────────────────────────
     // If POS cancels before the KIOSK accepts (PENDING_KIOSK), delete the order
     // and broadcast ORDER_CANCELLED so the KIOSK dismisses the banner.
@@ -439,6 +601,29 @@ pub async fn register_ws_routes(
                         log::info!("KIOSK_COMPLETE_ORDER from {} → ORDER_COMPLETED", sender_id);
                     });
                 }
+            })
+            .await;
+    }
+
+    // ── PULL_KIOSK_CART: POS → forward to target KIOSK (side-by-side pull) ────
+    {
+        let ws_state = ws_state.clone();
+        event_bus
+            .subscribe("PULL_KIOSK_CART", move |msg| {
+                let target_kiosk_id = match msg
+                    .payload
+                    .get("targetKioskId")
+                    .and_then(|v| v.as_str())
+                {
+                    Some(id) => id.to_string(),
+                    None => return,
+                };
+                let terminals = ws_state.server.get_terminals();
+                let forward = WsMessage::new("PULL_KIOSK_CART", msg.payload.clone());
+                tokio::spawn(async move {
+                    send_to_terminal(&terminals, &target_kiosk_id, &forward).await;
+                    log::info!("PULL_KIOSK_CART forwarded to {}", target_kiosk_id);
+                });
             })
             .await;
     }

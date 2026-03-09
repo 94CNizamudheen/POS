@@ -255,6 +255,128 @@ impl OrderStore {
         self.get_order(order_id)
     }
 
+    // ── Granular item actions (assistance session) ────────────────────────────
+
+    fn is_participant(&self, order: &Order, updater: &TerminalIdentity) -> bool {
+        let is_owner = order
+            .owner_terminal
+            .as_ref()
+            .map_or(false, |t| t.terminal_id == updater.terminal_id);
+        let is_origin = order.origin_terminal.terminal_id == updater.terminal_id;
+        is_owner || is_origin
+    }
+
+    fn recalc_and_save(&self, order_id: &str, items: &[OrderLineItem]) -> SqlResult<Option<Order>> {
+        let now = chrono::Utc::now().timestamp_millis();
+        let expires_at = now + ORDER_TTL_MS;
+        let subtotal: f64 = items.iter().map(|i| i.subtotal).sum();
+        let tax = subtotal * 0.1;
+        let total = subtotal + tax;
+        let items_json = serde_json::to_string(items).unwrap_or_default();
+        self.conn.execute(
+            "UPDATE orders SET items_json=?1, subtotal=?2, tax=?3, total=?4, updated_at=?5, expires_at=?6
+             WHERE order_id=?7",
+            params![items_json, subtotal, tax, total, now, expires_at, order_id],
+        )?;
+        self.get_order(order_id)
+    }
+
+    /// Add an item to the order, or increment qty if the product already exists.
+    pub fn add_item(
+        &self,
+        order_id: &str,
+        item: OrderLineItem,
+        updater: &TerminalIdentity,
+    ) -> SqlResult<Option<Order>> {
+        let order = match self.get_order(order_id)? {
+            Some(o) => o,
+            None => return Ok(None),
+        };
+        if !self.is_participant(&order, updater) {
+            return Ok(None);
+        }
+        let mut items = order.items;
+        if let Some(existing) = items.iter_mut().find(|i| i.product_id == item.product_id) {
+            existing.qty += item.qty;
+            existing.subtotal = existing.price * existing.qty as f64;
+        } else {
+            items.push(item);
+        }
+        self.recalc_and_save(order_id, &items)
+    }
+
+    /// Remove an item from the order by productId.
+    pub fn remove_item(
+        &self,
+        order_id: &str,
+        product_id: &str,
+        updater: &TerminalIdentity,
+    ) -> SqlResult<Option<Order>> {
+        let order = match self.get_order(order_id)? {
+            Some(o) => o,
+            None => return Ok(None),
+        };
+        if !self.is_participant(&order, updater) {
+            return Ok(None);
+        }
+        let items: Vec<OrderLineItem> = order
+            .items
+            .into_iter()
+            .filter(|i| i.product_id != product_id)
+            .collect();
+        self.recalc_and_save(order_id, &items)
+    }
+
+    /// Set an item's quantity. qty=0 removes the item.
+    pub fn change_qty(
+        &self,
+        order_id: &str,
+        product_id: &str,
+        qty: i64,
+        updater: &TerminalIdentity,
+    ) -> SqlResult<Option<Order>> {
+        let order = match self.get_order(order_id)? {
+            Some(o) => o,
+            None => return Ok(None),
+        };
+        if !self.is_participant(&order, updater) {
+            return Ok(None);
+        }
+        let mut items: Vec<OrderLineItem> = order.items;
+        if qty <= 0 {
+            items.retain(|i| i.product_id != product_id);
+        } else if let Some(item) = items.iter_mut().find(|i| i.product_id == product_id) {
+            item.qty = qty;
+            item.subtotal = item.price * qty as f64;
+        }
+        self.recalc_and_save(order_id, &items)
+    }
+
+    /// Apply a fixed discount amount (subtracted from subtotal before tax).
+    pub fn apply_discount(
+        &self,
+        order_id: &str,
+        amount: f64,
+        updater: &TerminalIdentity,
+    ) -> SqlResult<Option<Order>> {
+        let order = match self.get_order(order_id)? {
+            Some(o) => o,
+            None => return Ok(None),
+        };
+        if !self.is_participant(&order, updater) {
+            return Ok(None);
+        }
+        let now = chrono::Utc::now().timestamp_millis();
+        let discounted_subtotal = (order.subtotal - amount).max(0.0);
+        let tax = discounted_subtotal * 0.1;
+        let total = discounted_subtotal + tax;
+        self.conn.execute(
+            "UPDATE orders SET subtotal=?1, tax=?2, total=?3, updated_at=?4 WHERE order_id=?5",
+            params![discounted_subtotal, tax, total, now, order_id],
+        )?;
+        self.get_order(order_id)
+    }
+
     pub fn accept_kiosk_order(&self, order_id: &str) -> SqlResult<Option<Order>> {
         let now = chrono::Utc::now().timestamp_millis();
         self.conn.execute(

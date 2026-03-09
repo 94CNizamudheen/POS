@@ -10,16 +10,22 @@ import KioskSentBanner from "../components/menu-selection/KioskSentBanner";
 import { ProductProvider } from "@/context/ProductContext";
 import type { Product } from "@/types/product";
 import { useOrder } from "@/context/OrderContext";
+import { enrichLineItems } from "@/utils/enrichLineItems";
 
 export default function MenuSelection() {
   const {
     activeOrder,
     updateOrder,
+    addItemToOrder,
+    removeItemFromOrder,
+    changeItemQty,
     lastCompletedOrder,
     stashWalkupCart,
     popWalkupCart,
-    kioskAcceptedAt,
   } = useOrder();
+
+  const isAssistanceMode =
+    activeOrder !== null && activeOrder.originTerminal.type === "KIOSK";
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Refs so closures (mount/unmount effects) always see the latest values
@@ -48,11 +54,6 @@ export default function MenuSelection() {
     if (lastCompletedOrder) setCartItems([]);
   }, [lastCompletedOrder]);
 
-  // Reset cart when KIOSK customer accepts a POS-sent order
-  useEffect(() => {
-    if (kioskAcceptedAt > 0) setCartItems([]);
-  }, [kioskAcceptedAt]);
-
   // Clear cart when active order is released (e.g. customer accepted on KIOSK)
   const prevActiveOrderIdForClear = useRef<string | undefined>(undefined);
   useEffect(() => {
@@ -67,19 +68,13 @@ export default function MenuSelection() {
   // Pre-populate cart when a KIOSK order is claimed or resumed
   useEffect(() => {
     if (!activeOrder) return;
-    const mapped: CartItem[] = activeOrder.items.map((li) => ({
-      id: li.productId,
-      name: li.name,
-      price: li.price,
-      qty: li.qty,
-      active: true,
-      sort_order: 0,
-    }));
+    const mapped = enrichLineItems(activeOrder.items);
     if (mapped.length > 0) setCartItems(mapped);
   }, [activeOrder?.orderId]);
 
   function syncIfActive(next: CartItem[]) {
-    if (activeOrder) updateOrder(activeOrder.orderId, next);
+    if (activeOrder && !isAssistanceMode)
+      updateOrder(activeOrder.orderId, next);
   }
 
   const handleAdd = (product: Product) => {
@@ -88,7 +83,21 @@ export default function MenuSelection() {
       const next = existing
         ? prev.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i))
         : [...prev, { ...product, qty: 1 }];
-      syncIfActive(next);
+      if (isAssistanceMode && activeOrder) {
+        if (existing) {
+          changeItemQty(activeOrder.orderId, product.id, existing.qty + 1);
+        } else {
+          addItemToOrder(activeOrder.orderId, {
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            qty: 1,
+            subtotal: product.price,
+          });
+        }
+      } else {
+        syncIfActive(next);
+      }
       return next;
     });
   };
@@ -98,17 +107,27 @@ export default function MenuSelection() {
       const next = prev.map((i) =>
         i.id === id ? { ...i, qty: i.qty + 1 } : i,
       );
-      syncIfActive(next);
+      if (isAssistanceMode && activeOrder) {
+        const item = next.find((i) => i.id === id);
+        if (item) changeItemQty(activeOrder.orderId, id, item.qty);
+      } else {
+        syncIfActive(next);
+      }
       return next;
     });
   };
 
   const handleDecrease = (id: string) => {
     setCartItems((prev) => {
-      const next = prev.map((i) =>
-        i.id === id ? { ...i, qty: Math.max(1, i.qty - 1) } : i,
-      );
-      syncIfActive(next);
+      const item = prev.find((i) => i.id === id);
+      if (!item) return prev;
+      const newQty = Math.max(1, item.qty - 1);
+      const next = prev.map((i) => (i.id === id ? { ...i, qty: newQty } : i));
+      if (isAssistanceMode && activeOrder) {
+        changeItemQty(activeOrder.orderId, id, newQty);
+      } else {
+        syncIfActive(next);
+      }
       return next;
     });
   };
@@ -116,19 +135,26 @@ export default function MenuSelection() {
   const handleRemove = (id: string) => {
     setCartItems((prev) => {
       const next = prev.filter((i) => i.id !== id);
-      syncIfActive(next);
+      if (isAssistanceMode && activeOrder) {
+        removeItemFromOrder(activeOrder.orderId, id);
+      } else {
+        syncIfActive(next);
+      }
       return next;
     });
   };
 
   return (
     <ProductProvider>
-      <KioskSentBanner />
+      <KioskSentBanner onRecall={(items) => setCartItems(items)} />
       <Header />
       {activeOrder && (
-        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 text-sm font-semibold text-yellow-800">
-          Editing order #{activeOrder.orderNumber} — changes sync to KIOSK in
-          real-time
+        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 flex items-center justify-between gap-4">
+          <span className="text-sm font-semibold text-yellow-800">
+            {activeOrder.originTerminal.type === "KIOSK"
+              ? `Assisting customer · Order #${activeOrder.orderNumber} — changes sync to KIOSK in real-time`
+              : `Editing order #${activeOrder.orderNumber} — changes sync to KIOSK in real-time`}
+          </span>
         </div>
       )}
 
@@ -141,7 +167,7 @@ export default function MenuSelection() {
           </div>
 
           {/* Category (left) + Products (right) */}
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 overflow-hidden ">
             <CategoryTab />
             <Products onAdd={handleAdd} />
           </div>

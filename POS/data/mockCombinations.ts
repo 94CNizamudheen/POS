@@ -482,7 +482,7 @@ export const mockCombinations: CombinationGroup[] = [
             sort_order: 1,
             is_sold_out: 0,
             media:
-              '[{"filepath":"https://images.unsplash.com/photo-1563746098251-d35aef196e83?w=400&h=400&fit=crop","media_type":"image","media_tag":"default","public_id":"unsplash-watermelon-juice","filename":"watermelon-juice.jpg"}]',
+              '[{"filepath":"https://th.bing.com/th/id/OIP.UblI9SkmpJ-Gbnvk7yAlWwHaJc?w=182&h=232&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3","media_type":"image","media_tag":"default","public_id":"unsplash-watermelon-juice","filename":"watermelon-juice.jpg"}]',
             overrides: "[]",
             is_product_tag: false,
             barcodes: "[]",
@@ -498,7 +498,7 @@ export const mockCombinations: CombinationGroup[] = [
             sort_order: 2,
             is_sold_out: 0,
             media:
-              '[{"filepath":"https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop","media_type":"image","media_tag":"default","public_id":"unsplash-apple-juice","filename":"apple-juice.jpg"}]',
+              '[{"filepath":"https://minnetonkaorchards.com/wp-content/uploads/2022/05/Apple-Cider-768x512.jpg","media_type":"image","media_tag":"default","public_id":"unsplash-apple-juice","filename":"apple-juice.jpg"}]',
             overrides: "[]",
             is_product_tag: false,
             barcodes: "[]",

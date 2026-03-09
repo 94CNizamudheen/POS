@@ -31,7 +31,7 @@ export default function CategoryTab() {
   if (!categories.length) return null;
 
   return (
-    <aside className="w-36 shrink-0 h-full overflow-y-auto border-r border-gray-100 bg-white">
+    <aside className="w-36 shrink-0 h-full overflow-y-auto border-r border-gray-100 bg-white pt-2">
       <div className="flex flex-col gap-1.5 p-2">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat.id;
@@ -39,7 +39,7 @@ export default function CategoryTab() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`w-full rounded-xl text-xs font-medium text-left transition-all border overflow-hidden
+              className={`w-full rounded-xl text-xs font-medium text-left transition-all border-4 overflow-hidden
                 ${
                   isActive
                     ? "border-green-500 shadow-sm"
@@ -49,7 +49,7 @@ export default function CategoryTab() {
               <img
                 src={getCategoryImage(cat.media)}
                 alt={cat.name}
-                className="w-full h-10 object-contain"
+                className="w-full h-20 object-cover"
               />
               <div
                 className={`px-2 py-1.5 text-center

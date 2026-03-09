@@ -10,15 +10,18 @@ import {
   Moon,
   Sun,
   PauseCircle,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import userPng from "@/assets/user.png";
+import { useOrder } from "@/context/OrderContext";
 
 const navItems = [
   // { icon: Home,          label: "Home",    id: "home",    path: "/"        },
   { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/" },
   { icon: ShoppingBag, label: "Orders", id: "orders", path: "/orders" },
+  { icon: Bell, label: "Incoming", id: "incoming", path: "/incoming" },
   { icon: PauseCircle, label: "Hold", id: "held-orders", path: "/held-orders" },
   { icon: Wallet, label: "Wallet", id: "wallet", path: null },
   { icon: History, label: "History", id: "history", path: null },
@@ -35,6 +38,8 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
   const [dark, setDark] = useState(false);
+  const { incomingOrders } = useOrder();
+  const incomingCount = incomingOrders.length;
 
   function resolveActive(id: string, path: string | null) {
     if (activeNav) return activeNav === id;
@@ -44,9 +49,9 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
   }
 
   return (
-    <aside className="w-[10%] min-w-40 h-full bg-white border-r border-gray-100 flex flex-col items-center py-4 gap-2">
+    <aside className="w-14 md:w-[10%] md:min-w-40 h-full bg-white border-r border-gray-100 flex flex-col items-center py-4 gap-2 shrink-0">
       {/* Restaurant logo */}
-      <div className="flex flex-col items-center mb-1 px-2">
+      <div className="hidden md:flex flex-col items-center mb-1 px-2">
         <span className="text-xl font-extrabold text-center leading-tight">
           <span className="text-gray-800">Res</span>
           <span className="text-green-500">t</span>
@@ -67,17 +72,21 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
             className="w-full h-full object-cover"
           />
         </div>
-        <p className="text-sm font-bold text-gray-800 text-center">Jhone Doe</p>
+        <p className="hidden md:block text-sm font-bold text-gray-800 text-center">
+          Jhone Doe
+        </p>
       </div>
 
       <nav className="w-full flex flex-col items-center gap-1 px-2">
         {navItems.map(({ icon: Icon, label, id, path }) => {
           const isActive = resolveActive(id, path);
+          const count = id === "incoming" ? incomingCount : 0;
           return (
             <button
               key={id}
               onClick={() => path && navigate(path)}
-              className={`w-full flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all text-xs font-medium
+              title={label}
+              className={`relative w-full flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all text-xs font-medium
                 ${
                   isActive
                     ? "bg-green-500 text-white shadow-md shadow-green-200"
@@ -86,14 +95,21 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
                       : "text-gray-300 cursor-not-allowed"
                 }`}
             >
-              <Icon className="w-5 h-5" />
-              {label}
+              <span className="relative">
+                <Icon className="w-5 h-5" />
+                {count > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    {count}
+                  </span>
+                )}
+              </span>
+              <span className="hidden md:block">{label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="flex gap-2 mt-auto">
+      <div className="hidden md:flex gap-2 mt-auto">
         <button
           onClick={() => setDark(false)}
           className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border transition

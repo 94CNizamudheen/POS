@@ -6,3 +6,7 @@ use tauri::AppHandle;
 pub fn init(app: &AppHandle) {
     migrate::run_migrations_once(app);
 }
+
+pub fn connection(app: &AppHandle) -> rusqlite::Connection {
+    migrate::connection(app)
+}

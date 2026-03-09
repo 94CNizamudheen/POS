@@ -15,6 +15,13 @@
       "when": 1772815958345,
       "tag": "0001_neat_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772971611100,
+      "tag": "0002_equal_snowbird",
+      "breakpoints": true
     }
   ]
 }

@@ -6,13 +6,13 @@ export default function ProductGroupTab() {
   if (productGroups.length <= 1) return null;
 
   return (
-    <div className="w-full overflow-x-auto no-scrollbar">
-      <div className="flex gap-2 min-w-max">
+    <div className="w-full overflow-x-auto no-scrollbar ">
+      <div className="flex gap-2 min-w-max ">
         {productGroups.map((group) => (
           <button
             key={group.id}
             onClick={() => setSelectedGroup(group.id)}
-            className={`px-15 py-4 rounded-lg border text-sm whitespace-nowrap transition-all
+            className={`px-15 py-4 rounded-lg border-4 text-sm whitespace-nowrap transition-all 
               ${
                 selectedGroup === group.id
                   ? "bg-green-500 text-white border-green-500 shadow-sm"

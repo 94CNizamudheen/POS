@@ -1,7 +1,28 @@
-import { useState } from "react";
-import { Minus, Plus, Banknote, CreditCard, Wallet, Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Minus,
+  Plus,
+  Banknote,
+  CreditCard,
+  Wallet,
+  Send,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+} from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
+import { orderWebSocketService } from "@/services/orderWebSocket/orderWebSocket.service";
 import emptyCartImg from "@/assets/empty-cart.png";
 import dishPlaceholder from "@/assets/dish-placeholder.jpg";
+
+function getProductImage(media?: string): string {
+  if (!media || media === "[]") return dishPlaceholder;
+  try {
+    const parsed = JSON.parse(media) as { filepath: string }[];
+    return parsed[0]?.filepath ?? dishPlaceholder;
+  } catch {
+    return dishPlaceholder;
+  }
+}
 import type { Product } from "@/types/product";
 import { useOrder } from "@/context/OrderContext";
 import type { PaymentMethod } from "@/types/order";
@@ -39,13 +60,26 @@ export default function CartSidebar({
   const {
     activeOrder,
     sendToKiosk,
+    preparePullClaim,
     completeOrder,
     completeDirectOrder,
     clearActiveOrder,
+    releaseOrder,
     isConnected,
     lastCompletedOrder,
     clearCompletedOrder,
   } = useOrder();
+  const [pulling, setPulling] = useState(false);
+  const [pairedKioskId, setPairedKioskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    invoke<string | null>("get_app_state", { key: "paired_kiosk_id" })
+      .then((v) => setPairedKioskId(v && v.length > 0 ? v : null))
+      .catch(() => {});
+  }, []);
+
+  const isAssistanceOrder =
+    activeOrder !== null && activeOrder.originTerminal.type === "KIOSK";
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(
     null,
   );
@@ -85,7 +119,7 @@ export default function CartSidebar({
             className="flex items-center gap-2 bg-gray-50 rounded-xl p-2"
           >
             <img
-              src={item.media || dishPlaceholder}
+              src={getProductImage(item.media)}
               alt={item.name}
               className="w-10 h-10 rounded-lg object-cover shrink-0 bg-gray-200"
               onError={(e) => {
@@ -169,15 +203,65 @@ export default function CartSidebar({
         </div>
       </div>
 
-      <button
-        onClick={() => sendToKiosk(items)}
-        disabled={items.length === 0 || !isConnected}
-        className="w-full py-2.5 flex items-center justify-center gap-2 border-2 border-green-400 text-green-600 font-bold rounded-xl text-sm hover:bg-green-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        <Send className="w-4 h-4" />
-        Send to Kiosk
-      </button>
+      {/* Pull — only when paired kiosk is set and cart is empty */}
+      {!isAssistanceOrder && pairedKioskId && isConnected && items.length === 0 && (
+        <button
+          onClick={() => {
+            setPulling(true);
+            preparePullClaim();
+            orderWebSocketService.pullKioskCart(pairedKioskId);
+            setTimeout(() => setPulling(false), 3000);
+          }}
+          disabled={pulling}
+          className="w-full py-2.5 flex items-center justify-center gap-2 border-2 border-indigo-400 text-indigo-600 font-bold rounded-xl text-sm hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ArrowDownToLine className="w-4 h-4" />
+          {pulling ? "Pulling…" : "Pull Kiosk Cart"}
+        </button>
+      )}
 
+      {/* Push — always available when cart has items, sends to paired kiosk or broadcasts */}
+      {!isAssistanceOrder && isConnected && (
+        <button
+          onClick={() => {
+            sendToKiosk(items, pairedKioskId ?? undefined);
+            onClearCart();
+          }}
+          disabled={items.length === 0}
+          className="w-full py-2.5 flex items-center justify-center gap-2 border-2 border-indigo-400 text-indigo-600 font-bold rounded-xl text-sm hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ArrowUpFromLine className="w-4 h-4" />
+          Push to Kiosk
+        </button>
+      )}
+
+      {/* Kiosk return banner — only when kiosk is remote (DISTANCE), not side-by-side */}
+      {isAssistanceOrder && !pairedKioskId && (
+        <div className="rounded-xl border-2 border-amber-300 bg-amber-50 px-3 py-3 flex flex-col items-center gap-1">
+          <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
+            Customer Kiosk Code
+          </p>
+          <p className="text-3xl font-black tracking-widest text-amber-700">
+            #{activeOrder!.orderNumber}
+          </p>
+          <p className="text-[10px] text-amber-500 text-center leading-tight">
+            Tell the customer to enter this number at the kiosk to continue
+            their order
+          </p>
+        </div>
+      )}
+
+      {/* Option A — return order to customer at KIOSK */}
+      {isAssistanceOrder && (
+        <button
+          onClick={() => releaseOrder(activeOrder!.orderId)}
+          className="w-full py-2.5 flex items-center justify-center gap-2 border-2 border-yellow-400 text-yellow-700 font-bold rounded-xl text-sm hover:bg-yellow-50 transition"
+        >
+          Return to Customer
+        </button>
+      )}
+
+      {/* Option B — complete at POS */}
       <button
         onClick={async () => {
           if (!selectedMethod || placing) return;
@@ -200,7 +284,11 @@ export default function CartSidebar({
         disabled={items.length === 0 || !selectedMethod || placing}
         className="w-full py-3 bg-green-400 text-white font-bold rounded-xl hover:bg-green-500 transition text-sm shadow-md shadow-green-100 disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {placing ? "Processing…" : "Place Order"}
+        {placing
+          ? "Processing…"
+          : isAssistanceOrder
+            ? "Complete at Cashier"
+            : "Place Order"}
       </button>
 
       {lastCompletedOrder && (

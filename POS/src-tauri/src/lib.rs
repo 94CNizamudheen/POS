@@ -1,4 +1,5 @@
 mod commands;
+mod db;
 mod order_store;
 mod websocket;
 
@@ -16,6 +17,9 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            // ── Local DB migrations (app_state table, etc.) ───────────────────
+            db::init(app.handle());
+
             // ── Resolve DB path ───────────────────────────────────────────────
             let db_path = app
                 .path()
@@ -123,6 +127,8 @@ pub fn run() {
             commands::order_store::delete_held_order,
             // ── App state ────────────────────────────────────────────────────
             commands::app_state::clear_all_data,
+            commands::app_state::get_app_state,
+            commands::app_state::set_app_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

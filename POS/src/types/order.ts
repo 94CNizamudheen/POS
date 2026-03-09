@@ -10,7 +10,7 @@ export type OrderStatus =
   | "EXPIRED"
   | "CANCELLED";
 
-export type TerminalType = "KIOSK" | "POS";
+export type TerminalType = "KIOSK" | "POS" | "KIOSK_TRANSFER";
 
 export type PaymentMethod = "CASH" | "CARD" | "EWALLET";
 
@@ -66,6 +66,12 @@ export type WsMessageType =
   | "COMPLETE_ORDER"
   | "ORDER_COMPLETED"
   | "ORDER_EXPIRED"
+  | "ADD_ITEM"
+  | "REMOVE_ITEM"
+  | "CHANGE_QTY"
+  | "APPLY_DISCOUNT"
+  | "CLEAR_KIOSK_DATA"
+  | "PULL_KIOSK_CART"
   | "ERROR";
 
 export interface WsMessage<T = unknown> {

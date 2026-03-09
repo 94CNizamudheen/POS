@@ -72,6 +72,44 @@ class OrderWebSocketService {
     this.client?.send("REQUEST_ASSISTANCE", { items });
   }
 
+  // ─── Granular item actions (assistance session) ───────────────────────────
+
+  /** Add an item to a shared order (or increment if it already exists) */
+  addItem(orderId: string, item: OrderLineItem): void {
+    this.client?.send("ADD_ITEM", { orderId, item });
+  }
+
+  /** Remove an item from a shared order by productId */
+  removeItem(orderId: string, productId: string): void {
+    this.client?.send("REMOVE_ITEM", { orderId, productId });
+  }
+
+  /** Set an item's quantity (0 removes it) */
+  changeQty(orderId: string, productId: string, qty: number): void {
+    this.client?.send("CHANGE_QTY", { orderId, productId, qty });
+  }
+
+  /** Apply a fixed discount amount to an order */
+  applyDiscount(orderId: string, amount: number): void {
+    this.client?.send("APPLY_DISCOUNT", { orderId, amount });
+  }
+
+  /** POS: instruct a specific KIOSK (or all KIOSKs) to wipe their local DB */
+  sendClearKioskData(targetKioskId?: string): void {
+    this.client?.send("CLEAR_KIOSK_DATA", { targetKioskId: targetKioskId ?? null });
+  }
+
+  /** POS: request the current cart from a side-by-side KIOSK.
+   *  The KIOSK will respond with REQUEST_ASSISTANCE → ORDER_AVAILABLE.
+   *  Pass the callback so the caller can auto-claim on arrival. */
+  pullKioskCart(targetKioskId: string): void {
+    this.client?.send("PULL_KIOSK_CART", { targetKioskId });
+  }
+
+  getPairedKioskId(): string {
+    return (import.meta.env.VITE_PAIRED_KIOSK_ID as string) ?? "";
+  }
+
   // ─── Shared actions ───────────────────────────────────────────────────────
 
   /** Either terminal: update order items */

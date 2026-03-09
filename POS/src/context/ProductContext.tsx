@@ -14,6 +14,8 @@ interface ProductContextValue {
   selectedCategory: string;
   setSelectedCategory: (id: string) => void;
   filteredProducts: Product[];
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
 }
 
 const ProductContext = createContext<ProductContextValue | null>(null);
@@ -46,6 +48,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const [selectedCategory, setSelectedCategory] =
     useState<string>(firstCategoryId);
 
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   // When group changes, reset to first category of that group
   const handleSetSelectedGroup = (id: string) => {
     setSelectedGroup(id);
@@ -54,10 +58,16 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   };
 
   const filteredProducts = useMemo<Product[]>(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      return mockCombinations
+        .flatMap((g) => g.categories.flatMap((c) => c.products))
+        .filter((p) => p.name.toLowerCase().includes(q));
+    }
     const group = mockCombinations.find((g) => g.id === selectedGroup);
     const category = group?.categories.find((c) => c.id === selectedCategory);
     return category?.products ?? [];
-  }, [selectedGroup, selectedCategory]);
+  }, [selectedGroup, selectedCategory, searchQuery]);
 
   return (
     <ProductContext.Provider
@@ -69,6 +79,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         selectedCategory,
         setSelectedCategory,
         filteredProducts,
+        searchQuery,
+        setSearchQuery,
       }}
     >
       {children}

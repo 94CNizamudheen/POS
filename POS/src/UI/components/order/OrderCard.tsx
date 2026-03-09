@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import type { Order, OrderStatus } from "@/types/order";
 
 const STATUS_BADGE: Record<OrderStatus, { label: string; cls: string }> = {
@@ -20,27 +21,45 @@ function formatTime(ts: number) {
   });
 }
 
-export default function OrderCard({ order }: { order: Order }) {
+export default function OrderCard({
+  order,
+  transferDirection,
+}: {
+  order: Order;
+  transferDirection?: "pos-to-kiosk" | "kiosk-to-pos" | "kiosk-to-pos-to-kiosk";
+}) {
   const badge = STATUS_BADGE[order.status as OrderStatus] ?? {
     label: order.status,
     cls: "bg-gray-100 text-gray-600",
   };
 
-  const isKioskOrder = order.originTerminal.type === "KIOSK";
-
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-extrabold text-gray-900 text-sm">
             #{order.orderNumber}
           </span>
-          {isKioskOrder && (
+          {/* Transfer badges — only for cross-terminal orders */}
+          {transferDirection === "kiosk-to-pos-to-kiosk" ? (
+            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100">
+              KIOSK <ArrowRight className="w-2.5 h-2.5" /> POS <ArrowRight className="w-2.5 h-2.5" /> KIOSK
+            </span>
+          ) : transferDirection === "kiosk-to-pos" ? (
+            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-100">
+              KIOSK <ArrowRight className="w-2.5 h-2.5" /> POS
+            </span>
+          ) : transferDirection === "pos-to-kiosk" ? (
+            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
+              POS <ArrowRight className="w-2.5 h-2.5" /> KIOSK
+            </span>
+          ) : order.originTerminal.type === "KIOSK" ? (
+            /* Self-service KIOSK order — no transfer involved */
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-100">
               KIOSK
             </span>
-          )}
+          ) : null}
         </div>
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${badge.cls}`}>
           {badge.label}

@@ -14,7 +14,7 @@ export default function IncomingOrderBadge() {
       title="Incoming orders"
     >
       🛎
-      <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+      <span className="absolute -top-1.5 -right-1.5 min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
         {incomingOrders.length}
       </span>
     </button>
