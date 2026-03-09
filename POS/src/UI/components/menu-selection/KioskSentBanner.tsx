@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, X } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 import { useOrder } from "@/context/OrderContext";
+import { appLocalService } from "@/services/local/app.local.service";
 import type { CartItem } from "@/UI/components/menu-selection/CartSidebar";
 import { enrichLineItems } from "@/utils/enrichLineItems";
 
@@ -16,8 +16,8 @@ export default function KioskSentBanner({ onRecall }: KioskSentBannerProps) {
   const [isSamePosition, setIsSamePosition] = useState(false);
 
   useEffect(() => {
-    invoke<string | null>("get_app_state", { key: "paired_kiosk_id" })
-      .then((v) => setIsSamePosition(!!v && v.length > 0))
+    appLocalService.getPairedKioskId()
+      .then((v) => setIsSamePosition(v !== null))
       .catch(() => {});
   }, []);
 

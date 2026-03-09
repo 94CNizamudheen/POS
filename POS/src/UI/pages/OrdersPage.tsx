@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { orderLocalService } from "@/services/local/order.local.service";
 import { RefreshCw } from "lucide-react";
 import OrderCard from "../components/order/OrderCard";
 import type { Order, OrderStatus } from "@/types/order";
@@ -23,7 +23,7 @@ export default function OrdersPage() {
   async function fetchOrders() {
     setLoading(true);
     try {
-      const result = await invoke<Order[]>("get_all_orders", { limit: 100 });
+      const result = await orderLocalService.getAll();
       setOrders(result);
     } catch (e) {
       console.error("Failed to load orders:", e);

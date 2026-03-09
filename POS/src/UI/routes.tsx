@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import SidebarLayout from "./layouts/SidebarLayout";
+import MenuSelectionLayout from "./layouts/MenuSelectionLayout";
 import MenuSelection from "./pages/MenuSelection";
 import IncomingOrders from "./pages/IncomingOrders";
 import OrdersPage from "./pages/OrdersPage";
@@ -13,7 +13,7 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        element: <SidebarLayout />,
+        element: <MenuSelectionLayout />,
         children: [
           { index: true, element: <MenuSelection /> },
           { path: "incoming", element: <IncomingOrders /> },

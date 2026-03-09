@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  USB device filter for thermal printers.
+  Referenced by USB_DEVICE_ATTACHED intent-filter in AndroidManifest.xml.
+
+  IMPORTANT: Most thermal printers (Epson, XPrinter, Rongta, Star) report
+  bDeviceClass=0x00 (class defined at interface level, not device level).
+  Android matches this filter against the DEVICE-level class byte only, so
+  <usb-device class="7" /> alone does NOT trigger for those printers.
+  We therefore add explicit vendor-id entries for every common brand.
+
+  vendor-id values must be DECIMAL (not hex).
+-->
+<resources>
+
+    <!-- Generic USB Printer Class 7 at device level (some POS terminals) -->
+    <usb-device class="7" />
+
+    <!-- Epson  (TM-m30II, TM-T82III, TM-T88VI, TM-T20III, etc.)  VID=0x04B8 -->
+    <usb-device vendor-id="1208" />
+
+    <!-- XPrinter / Xprinter  (XP-58IIL, XP-80C, XP-420B, etc.)   VID=0x6868 -->
+    <usb-device vendor-id="26728" />
+
+    <!-- Rongta  (RP58E, RP80USE, RP332, etc.)                       VID=0x20D1 -->
+    <usb-device vendor-id="8401" />
+
+    <!-- Star Micronics  (TSP143, TSP654II, etc.)                    VID=0x0519 -->
+    <usb-device vendor-id="1305" />
+
+    <!-- SNBC  (BTP-S80, BTP-M300, etc.)                             VID=0x154F -->
+    <usb-device vendor-id="5455" />
+
+    <!-- Bixolon  (SRP-350III, SRP-380, etc.)                        VID=0x1504 -->
+    <usb-device vendor-id="5380" />
+
+    <!-- Zebra  (ZD420, ZD230, etc.)                                  VID=0x0A5F -->
+    <usb-device vendor-id="2655" />
+
+    <!-- Sewoo / Woosim                                               VID=0x28E9 -->
+    <usb-device vendor-id="10473" />
+
+    <!-- Custom SPA/SRL  (rebadged by many OEMs)                      VID=0x0483 -->
+    <usb-device vendor-id="1155" />
+
+    <!-- Citizen  (CT-E351, CT-S310II, etc.)                          VID=0x1D90 -->
+    <usb-device vendor-id="7568" />
+
+    <!-- Hoin  (HOP-H58, HOP-E200, popular low-cost brand)            VID=0x0FE6 -->
+    <usb-device vendor-id="4070" />
+
+</resources>

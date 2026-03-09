@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { appLocalService } from "@/services/local/app.local.service";
 import {
   RefreshCw,
   Wifi,
@@ -9,12 +10,6 @@ import {
   Trash2,
 } from "lucide-react";
 import ClearDataModal from "../components/settings/ClearDataModal";
-// import { orderWebSocketService } from "@/services/orderWebSocket/orderWebSocket.service";
-
-type KioskPositionConfig = {
-  kioskId: string;
-  position: "SAME" | "DISTANCE";
-};
 
 interface ServerInfo {
   ip: string;
@@ -42,11 +37,9 @@ export default function SettingsPage() {
   // Load persisted positions for all known kiosks
   useEffect(() => {
     kioskTerminals.forEach(({ terminalId }) => {
-      invoke<string | null>("get_app_state", { key: `kiosk_position_${terminalId}` })
+      appLocalService.getKioskPosition(terminalId)
         .then((v) => {
-          if (v === "SAME" || v === "DISTANCE") {
-            setKioskPositions((prev) => ({ ...prev, [terminalId]: v }));
-          }
+          if (v) setKioskPositions((prev) => ({ ...prev, [terminalId]: v }));
         })
         .catch(console.error);
     });
@@ -55,35 +48,18 @@ export default function SettingsPage() {
 
   async function setKioskPosition(kioskId: string, pos: "SAME" | "DISTANCE") {
     setKioskPositions((prev) => ({ ...prev, [kioskId]: pos }));
-    await invoke("set_app_state", { key: `kiosk_position_${kioskId}`, value: pos });
+    await appLocalService.setKioskPosition(kioskId, pos);
     // Keep a single "paired_kiosk_id" key so CartSidebar can find it quickly
     if (pos === "SAME") {
-      await invoke("set_app_state", { key: "paired_kiosk_id", value: kioskId });
+      await appLocalService.setPairedKioskId(kioskId);
     } else {
       // Only clear if this was the paired kiosk
-      const current = await invoke<string | null>("get_app_state", { key: "paired_kiosk_id" });
+      const current = await appLocalService.getPairedKioskId();
       if (current === kioskId) {
-        await invoke("set_app_state", { key: "paired_kiosk_id", value: "" });
+        await appLocalService.clearPairedKioskId();
       }
     }
   }
-  // const [selectedKiosk, setSelectedKiosk] = useState<string>("__all__");
-  // const [clearKioskConfirm, setClearKioskConfirm] = useState(false);
-  // const [kioskClearing, setKioskClearing] = useState(false);
-
-  // const kioskTerminals = terminals.filter((t) => t.terminalType === "KIOSK");
-
-  // function handleClearKiosk() {
-  //   if (!clearKioskConfirm) { setClearKioskConfirm(true); return; }
-  //   setKioskClearing(true);
-  //   const target = selectedKiosk === "__all__" ? undefined : selectedKiosk;
-  //   orderWebSocketService.sendClearKioskData(target);
-  //   setTimeout(() => {
-  //     setKioskClearing(false);
-  //     setClearKioskConfirm(false);
-  //   }, 1500);
-  // }
-
   const fetchAll = useCallback(async () => {
     try {
       const [info, connected] = await Promise.all([
@@ -291,59 +267,6 @@ export default function SettingsPage() {
           </section>
         )}
 
-        {/* TODO: Clear Kiosk Data — implement when ready
-          <section className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Kiosk Data Management
-            </h2>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 flex flex-col gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">Clear Kiosk Local Data</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Wipe all locally stored orders from a specific kiosk terminal or all kiosks.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <select
-                    value={selectedKiosk}
-                    onChange={(e) => { setSelectedKiosk(e.target.value); setClearKioskConfirm(false); }}
-                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none focus:border-gray-400"
-                  >
-                    <option value="__all__">All Kiosks ({kioskTerminals.length} online)</option>
-                    {kioskTerminals.map((t) => (
-                      <option key={t.terminalId} value={t.terminalId}>
-                        {t.terminalId}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={handleClearKiosk}
-                    disabled={kioskClearing || kioskTerminals.length === 0}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${
-                      clearKioskConfirm
-                        ? "bg-red-500 text-white hover:bg-red-600 border border-red-500"
-                        : "bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100"
-                    }`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    {kioskClearing ? "Sending…" : clearKioskConfirm ? "Confirm Clear" : "Clear Data"}
-                  </button>
-                </div>
-                {clearKioskConfirm && !kioskClearing && (
-                  <p className="text-xs text-red-500 font-semibold -mt-2">
-                    ⚠ Click "Confirm Clear" again to wipe{" "}
-                    {selectedKiosk === "__all__" ? "all connected kiosks" : selectedKiosk}.
-                    The kiosk will return to its home screen.
-                  </p>
-                )}
-                {kioskTerminals.length === 0 && (
-                  <p className="text-xs text-gray-400 -mt-2">No kiosk terminals currently connected.</p>
-                )}
-              </div>
-            </div>
-          </section>
-          */}
 
         {/* Danger Zone */}
         <section>

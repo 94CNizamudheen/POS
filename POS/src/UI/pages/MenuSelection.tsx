@@ -7,7 +7,7 @@ import CartSidebar, {
 import CategoryTab from "../components/menu-selection/CategoryTab";
 import ProductGroupTab from "../components/menu-selection/ProductGroupTab";
 import KioskSentBanner from "../components/menu-selection/KioskSentBanner";
-import { ProductProvider } from "@/context/ProductContext";
+import DisconnectedWatermark from "../components/common/DisconnectedWatermark";
 import type { Product } from "@/types/product";
 import { useOrder } from "@/context/OrderContext";
 import { enrichLineItems } from "@/utils/enrichLineItems";
@@ -15,6 +15,7 @@ import { enrichLineItems } from "@/utils/enrichLineItems";
 export default function MenuSelection() {
   const {
     activeOrder,
+    isConnected,
     updateOrder,
     addItemToOrder,
     removeItemFromOrder,
@@ -145,9 +146,9 @@ export default function MenuSelection() {
   };
 
   return (
-    <ProductProvider>
+    <>
       <KioskSentBanner onRecall={(items) => setCartItems(items)} />
-      <Header />
+
       {activeOrder && (
         <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 flex items-center justify-between gap-4">
           <span className="text-sm font-semibold text-yellow-800">
@@ -161,15 +162,17 @@ export default function MenuSelection() {
       <div className="flex flex-1 overflow-hidden">
         {/* Center: group tabs on top, then category + products */}
         <div className="flex flex-col flex-1 overflow-hidden">
+          <Header />
           {/* Product group tabs — top */}
           <div className="px-4 pt-3 pb-2 border-b border-gray-100 bg-white">
             <ProductGroupTab />
           </div>
 
           {/* Category (left) + Products (right) */}
-          <div className="flex flex-1 overflow-hidden ">
+          <div className="flex flex-1 overflow-hidden relative">
             <CategoryTab />
             <Products onAdd={handleAdd} />
+            {!isConnected && <DisconnectedWatermark />}
           </div>
         </div>
 
@@ -182,6 +185,6 @@ export default function MenuSelection() {
           onClearCart={() => setCartItems([])}
         />
       </div>
-    </ProductProvider>
+    </>
   );
 }

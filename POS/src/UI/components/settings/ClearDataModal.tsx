@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Eye, EyeOff, ShieldAlert, Trash2 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
+import { orderLocalService } from "@/services/local/order.local.service";
 
 const CLEAR_PASSWORD = "123qwe";
 
@@ -45,7 +45,7 @@ export default function ClearDataModal({ onClose }: { onClose: () => void }) {
     if (loading) return;
     setLoading(true);
     try {
-      await invoke("clear_all_data");
+      await orderLocalService.clearAllData();
       window.location.reload();
     } catch {
       setLoading(false);

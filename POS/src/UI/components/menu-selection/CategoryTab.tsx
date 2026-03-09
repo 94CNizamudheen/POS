@@ -31,7 +31,7 @@ export default function CategoryTab() {
   if (!categories.length) return null;
 
   return (
-    <aside className="w-36 shrink-0 h-full overflow-y-auto border-r border-gray-100 bg-white pt-2">
+    <aside className="w-[14%] shrink-0 h-full overflow-y-auto border-r border-gray-100 bg-white pt-2">
       <div className="flex flex-col gap-1.5 p-2">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat.id;

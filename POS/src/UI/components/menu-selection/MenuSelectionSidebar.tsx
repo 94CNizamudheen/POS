@@ -12,10 +12,10 @@ import {
   PauseCircle,
   Bell,
 } from "lucide-react";
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import userPng from "@/assets/user.png";
 import { useOrder } from "@/context/OrderContext";
+import { useTheme } from "@/context/ThemeContext";
 
 const navItems = [
   // { icon: Home,          label: "Home",    id: "home",    path: "/"        },
@@ -37,8 +37,8 @@ interface Props {
 export default function MenuSelectionSidebar({ activeNav }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [dark, setDark] = useState(false);
   const { incomingOrders } = useOrder();
+  const { theme, toggleTheme } = useTheme();
   const incomingCount = incomingOrders.length;
 
   function resolveActive(id: string, path: string | null) {
@@ -49,9 +49,9 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
   }
 
   return (
-    <aside className="w-14 md:w-[10%] md:min-w-40 h-full bg-white border-r border-gray-100 flex flex-col items-center py-4 gap-2 shrink-0">
+    <aside className="w-[7%] h-full bg-white border-r border-gray-100 flex flex-col items-center py-4 gap-2 shrink-0">
       {/* Restaurant logo */}
-      <div className="hidden md:flex flex-col items-center mb-1 px-2">
+      <div className="flex flex-col items-center mb-1 px-2">
         <span className="text-xl font-extrabold text-center leading-tight">
           <span className="text-gray-800">Res</span>
           <span className="text-green-500">t</span>
@@ -72,9 +72,7 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
             className="w-full h-full object-cover"
           />
         </div>
-        <p className="hidden md:block text-sm font-bold text-gray-800 text-center">
-          Jhone Doe
-        </p>
+        <p className="text-xs font-bold text-gray-800 text-center">Jhone Doe</p>
       </div>
 
       <nav className="w-full flex flex-col items-center gap-1 px-2">
@@ -103,27 +101,28 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
                   </span>
                 )}
               </span>
-              <span className="hidden md:block">{label}</span>
+              <span>{label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="hidden md:flex gap-2 mt-auto">
-        <button
-          onClick={() => setDark(false)}
-          className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border transition
-            ${!dark ? "border-gray-300 bg-gray-100 text-gray-700" : "border-transparent text-gray-400"}`}
-        >
-          <Moon className="w-3 h-3" /> Dark
-        </button>
-        <button
-          onClick={() => setDark(true)}
-          className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border transition
-            ${dark ? "border-gray-300 bg-gray-100 text-gray-700" : "border-transparent text-gray-400"}`}
-        >
-          <Sun className="w-3 h-3" /> Light
-        </button>
+      <div className="mt-auto">
+        {theme === "dark" ? (
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+          >
+            <Sun className="w-3 h-3" /> Light
+          </button>
+        ) : (
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+          >
+            <Moon className="w-3 h-3" /> Dark
+          </button>
+        )}
       </div>
     </aside>
   );

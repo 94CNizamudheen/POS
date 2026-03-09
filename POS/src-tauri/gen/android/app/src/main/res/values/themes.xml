@@ -1,0 +1,26 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.pos" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Status Bar - Dark background -->
+        <item name="android:statusBarColor">@color/status_bar_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Navigation Bar - Dark background -->
+        <item name="android:navigationBarColor">@color/nav_bar_dark</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- System bar backgrounds -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+
+        <!-- Display cutout support -->
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="p">shortEdges</item>
+
+        <!-- No action bar -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+
+        <!-- Primary colors for dark mode -->
+        <item name="colorPrimary">@color/primary_blue_light</item>
+        <item name="colorPrimaryDark">@color/primary_blue</item>
+    </style>
+</resources>

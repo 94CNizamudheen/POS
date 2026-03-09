@@ -5,12 +5,12 @@ import {
   Banknote,
   CreditCard,
   Wallet,
-  Send,
   ArrowDownToLine,
   ArrowUpFromLine,
+  WifiOff,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 import { orderWebSocketService } from "@/services/orderWebSocket/orderWebSocket.service";
+import { appLocalService } from "@/services/local/app.local.service";
 import emptyCartImg from "@/assets/empty-cart.png";
 import dishPlaceholder from "@/assets/dish-placeholder.jpg";
 
@@ -73,8 +73,8 @@ export default function CartSidebar({
   const [pairedKioskId, setPairedKioskId] = useState<string | null>(null);
 
   useEffect(() => {
-    invoke<string | null>("get_app_state", { key: "paired_kiosk_id" })
-      .then((v) => setPairedKioskId(v && v.length > 0 ? v : null))
+    appLocalService.getPairedKioskId()
+      .then(setPairedKioskId)
       .catch(() => {});
   }, []);
 
@@ -96,7 +96,10 @@ export default function CartSidebar({
   });
 
   return (
-    <aside className="w-[25%] min-w-60 h-full bg-white border-l border-gray-100 flex flex-col px-4 py-4 gap-3">
+    <aside
+      id="cart-button"
+      className="w-[30%] h-full bg-white border-l border-gray-100 flex flex-col px-4 py-4 gap-3"
+    >
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-sm font-bold text-gray-800">New Order Bill</h2>
         <span className="text-xs text-gray-400">{today}</span>
@@ -204,34 +207,52 @@ export default function CartSidebar({
       </div>
 
       {/* Pull — only when paired kiosk is set and cart is empty */}
-      {!isAssistanceOrder && pairedKioskId && isConnected && items.length === 0 && (
+      {!isAssistanceOrder && pairedKioskId && items.length === 0 && (
         <button
           onClick={() => {
+            if (!isConnected || pulling) return;
             setPulling(true);
             preparePullClaim();
             orderWebSocketService.pullKioskCart(pairedKioskId);
             setTimeout(() => setPulling(false), 3000);
           }}
-          disabled={pulling}
-          className="w-full py-2.5 flex items-center justify-center gap-2 border-2 border-indigo-400 text-indigo-600 font-bold rounded-xl text-sm hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          disabled={!isConnected || pulling}
+          className={`w-full py-2.5 flex items-center justify-center gap-2 border-2 font-bold rounded-xl text-sm transition disabled:cursor-not-allowed ${
+            isConnected
+              ? "border-indigo-400 text-indigo-600 hover:bg-indigo-50 disabled:opacity-40"
+              : "border-red-200 bg-red-50 text-red-400"
+          }`}
         >
-          <ArrowDownToLine className="w-4 h-4" />
-          {pulling ? "Pulling…" : "Pull Kiosk Cart"}
+          {isConnected ? (
+            <ArrowDownToLine className="w-4 h-4" />
+          ) : (
+            <WifiOff className="w-4 h-4" />
+          )}
+          {!isConnected ? "Kiosk Disconnected" : pulling ? "Pulling…" : "Pull Kiosk Cart"}
         </button>
       )}
 
-      {/* Push — always available when cart has items, sends to paired kiosk or broadcasts */}
-      {!isAssistanceOrder && isConnected && (
+      {/* Push — always visible when paired, disabled when disconnected */}
+      {!isAssistanceOrder && pairedKioskId && (
         <button
           onClick={() => {
+            if (!isConnected || items.length === 0) return;
             sendToKiosk(items, pairedKioskId ?? undefined);
             onClearCart();
           }}
-          disabled={items.length === 0}
-          className="w-full py-2.5 flex items-center justify-center gap-2 border-2 border-indigo-400 text-indigo-600 font-bold rounded-xl text-sm hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          disabled={!isConnected || items.length === 0}
+          className={`w-full py-2.5 flex items-center justify-center gap-2 border-2 font-bold rounded-xl text-sm transition disabled:cursor-not-allowed ${
+            isConnected
+              ? "border-indigo-400 text-indigo-600 hover:bg-indigo-50 disabled:opacity-40"
+              : "border-red-200 bg-red-50 text-red-400"
+          }`}
         >
-          <ArrowUpFromLine className="w-4 h-4" />
-          Push to Kiosk
+          {isConnected ? (
+            <ArrowUpFromLine className="w-4 h-4" />
+          ) : (
+            <WifiOff className="w-4 h-4" />
+          )}
+          {isConnected ? "Push to Kiosk" : "Kiosk Disconnected"}
         </button>
       )}
 

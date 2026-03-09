@@ -1,13 +1,12 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { invoke } from "@tauri-apps/api/core";
+import { orderLocalService } from "@/services/local/order.local.service";
 import type {
   Order,
   WsMessage,
   OrderLineItem,
   PaymentMethod,
 } from "@/types/order";
-import { heldOrderService } from "@/services/held-order.service";
 import type { CartItem } from "@/UI/components/menu-selection/CartSidebar";
 import { orderEventBus } from "@/services/orderWebSocket/orderEventBus";
 import { orderWebSocketService } from "@/services/orderWebSocket/orderWebSocket.service";
@@ -90,6 +89,7 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
 
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [incomingOrders, setIncomingOrders] = useState<Order[]>([]);
+  // true only when at least one KIOSK-* terminal is connected to this server
   const [isConnected, setIsConnected] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
@@ -117,34 +117,44 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
   const sendToKioskWasAssistanceRef = useRef(false);
 
   // Completed orders that went through POS→KIOSK transfer (session-persisted)
-  const [posSentToKioskCompletedIds, setPosSentToKioskCompletedIds] = useState<Set<string>>(() => {
+  const [posSentToKioskCompletedIds, setPosSentToKioskCompletedIds] = useState<
+    Set<string>
+  >(() => {
     try {
       const stored = sessionStorage.getItem("pos_kiosk_completed_ids");
-      return stored ? new Set<string>(JSON.parse(stored) as string[]) : new Set();
+      return stored
+        ? new Set<string>(JSON.parse(stored) as string[])
+        : new Set();
     } catch {
       return new Set();
     }
   });
 
   // Completed orders that went through KIOSK→POS transfer (KIOSK requested help, this POS completed)
-  const [kioskToPosTransferCompletedIds, setKioskToPosTransferCompletedIds] = useState<Set<string>>(() => {
-    try {
-      const stored = sessionStorage.getItem("kiosk_pos_completed_ids");
-      return stored ? new Set<string>(JSON.parse(stored) as string[]) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
+  const [kioskToPosTransferCompletedIds, setKioskToPosTransferCompletedIds] =
+    useState<Set<string>>(() => {
+      try {
+        const stored = sessionStorage.getItem("kiosk_pos_completed_ids");
+        return stored
+          ? new Set<string>(JSON.parse(stored) as string[])
+          : new Set();
+      } catch {
+        return new Set();
+      }
+    });
 
   // Completed orders that went through KIOSK→POS→KIOSK transfer
-  const [kioskToPosToKioskCompletedIds, setKioskToPosToKioskCompletedIds] = useState<Set<string>>(() => {
-    try {
-      const stored = sessionStorage.getItem("kiosk_pos_kiosk_completed_ids");
-      return stored ? new Set<string>(JSON.parse(stored) as string[]) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
+  const [kioskToPosToKioskCompletedIds, setKioskToPosToKioskCompletedIds] =
+    useState<Set<string>>(() => {
+      try {
+        const stored = sessionStorage.getItem("kiosk_pos_kiosk_completed_ids");
+        return stored
+          ? new Set<string>(JSON.parse(stored) as string[])
+          : new Set();
+      } catch {
+        return new Set();
+      }
+    });
 
   // Stash for walk-up cart items saved on MenuSelection unmount
   const walkupCartRef = useRef<CartItem[]>([]);
@@ -160,8 +170,8 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
     const subtotal = lineItems.reduce((s, i) => s + i.subtotal, 0);
     const tax = subtotal * 0.1;
     const now = Date.now();
-    heldOrderService
-      .save({
+    orderLocalService
+      .saveHeld({
         orderId: crypto.randomUUID(),
         orderNumber: `WALK-${new Date(now).toLocaleTimeString("en", {
           hour: "2-digit",
@@ -247,7 +257,9 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
             activeOrderRef.current &&
             activeOrderRef.current.orderId !== order.orderId
           ) {
-            heldOrderService.save(activeOrderRef.current).catch(console.error);
+            orderLocalService
+              .saveHeld(activeOrderRef.current)
+              .catch(console.error);
           }
           // Hold the walk-up cart stashed by MenuSelection on unmount (if any)
           if (walkupCartRef.current.length > 0) {
@@ -332,7 +344,8 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         "ORDER_COMPLETED",
         (msg: WsMessage<{ order: Order }>) => {
           const completed = msg.payload.order;
-          const wasMyActiveOrder = activeOrderRef.current?.orderId === completed.orderId;
+          const wasMyActiveOrder =
+            activeOrderRef.current?.orderId === completed.orderId;
           if (wasMyActiveOrder) {
             setLastCompletedOrder(completed);
             // KIOSK→POS transfer: this POS had the order active and completed it,
@@ -342,7 +355,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
                 const next = new Set(prev);
                 next.add(completed.orderId);
                 try {
-                  sessionStorage.setItem("kiosk_pos_completed_ids", JSON.stringify([...next]));
+                  sessionStorage.setItem(
+                    "kiosk_pos_completed_ids",
+                    JSON.stringify([...next]),
+                  );
                 } catch {}
                 return next;
               });
@@ -359,7 +375,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
                 const next = new Set(prev);
                 next.add(completed.orderId);
                 try {
-                  sessionStorage.setItem("kiosk_pos_kiosk_completed_ids", JSON.stringify([...next]));
+                  sessionStorage.setItem(
+                    "kiosk_pos_kiosk_completed_ids",
+                    JSON.stringify([...next]),
+                  );
                 } catch {}
                 return next;
               });
@@ -369,7 +388,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
                 const next = new Set(prev);
                 next.add(completed.orderId);
                 try {
-                  sessionStorage.setItem("pos_kiosk_completed_ids", JSON.stringify([...next]));
+                  sessionStorage.setItem(
+                    "pos_kiosk_completed_ids",
+                    JSON.stringify([...next]),
+                  );
                 } catch {}
                 return next;
               });
@@ -387,7 +409,7 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
             prev.filter((o) => o.orderId !== orderId),
           );
           // Also remove from persistent held store if it expired while held
-          heldOrderService.delete(orderId).catch(() => {});
+          orderLocalService.deleteHeld(orderId).catch(() => {});
           if (activeOrderRef.current?.orderId === orderId) {
             setActiveOrder(null);
           }
@@ -446,18 +468,18 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
   async function completeDirectOrder(items: CartItem[], method: PaymentMethod) {
     const terminalId = orderWebSocketService.getTerminalId() || "POS-1";
     const lineItems = toLineItems(items);
-    const order = await invoke<Order>("complete_pos_order", {
-      items: lineItems,
-      paymentMethod: method,
+    const order = await orderLocalService.completePosOrder(
+      lineItems,
+      method,
       terminalId,
-    });
+    );
     setLastCompletedOrder(order);
   }
 
   function releaseOrder(orderId: string) {
     orderWebSocketService.releaseOrder(orderId);
     setActiveOrder(null);
-    heldOrderService.delete(orderId).catch(() => {});
+    orderLocalService.deleteHeld(orderId).catch(() => {});
   }
 
   function addItemToOrder(orderId: string, item: OrderLineItem) {
@@ -496,10 +518,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
       activeOrderRef.current &&
       activeOrderRef.current.orderId !== order.orderId
     ) {
-      heldOrderService.save(activeOrderRef.current).catch(console.error);
+      orderLocalService.saveHeld(activeOrderRef.current).catch(console.error);
     }
     // Remove the resumed order from hold and make it active
-    heldOrderService.delete(order.orderId).catch(console.error);
+    orderLocalService.deleteHeld(order.orderId).catch(console.error);
     setActiveOrder(order);
     navigate("/");
   }

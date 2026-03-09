@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { PauseCircle, Trash2 } from "lucide-react";
 import { useOrder } from "@/context/OrderContext";
 import {
-  heldOrderService,
+  orderLocalService,
   type HeldOrder,
-} from "@/services/held-order.service";
+} from "@/services/local/order.local.service";
 
 function timeAgo(ms: number): string {
   const s = Math.floor((Date.now() - ms) / 1000);
@@ -25,7 +25,7 @@ export default function HeldOrdersPage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      setTickets(await heldOrderService.getAll());
+      setTickets(await orderLocalService.getAllHeld());
     } catch (e) {
       console.error("Failed to load held orders:", e);
     } finally {
@@ -38,13 +38,13 @@ export default function HeldOrdersPage() {
   }, [load]);
 
   async function handleResume(held: HeldOrder) {
-    const order = heldOrderService.parseOrder(held);
+    const order = orderLocalService.parseHeldOrder(held);
     if (!order) return;
     resumeHeldOrder(order);
   }
 
   async function handleDelete(held: HeldOrder) {
-    await heldOrderService.delete(held.orderId);
+    await orderLocalService.deleteHeld(held.orderId);
     setTickets((prev) => prev.filter((t) => t.orderId !== held.orderId));
     setConfirmDeleteId(null);
   }
@@ -100,7 +100,7 @@ export default function HeldOrdersPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {tickets.map((held) => {
-              const order = heldOrderService.parseOrder(held);
+              const order = orderLocalService.parseHeldOrder(held);
               const itemSummary = order
                 ? order.items.map((i) => `${i.qty}× ${i.name}`).join(", ")
                 : "—";

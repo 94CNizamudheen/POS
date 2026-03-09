@@ -1,1 +1,40 @@
 @import "tailwindcss";
+
+/* ── Dark mode overrides ─────────────────────────────────────────────────── */
+/* Applied when <html class="dark"> is set by ThemeContext                    */
+
+html.dark body {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Surfaces */
+html.dark .bg-white        { background-color: #1e293b !important; }
+html.dark .bg-gray-50      { background-color: #0f172a !important; }
+html.dark .bg-gray-100     { background-color: #1e293b !important; }
+html.dark .bg-gray-200     { background-color: #334155 !important; }
+
+/* Borders */
+html.dark .border-gray-100 { border-color: #334155 !important; }
+html.dark .border-gray-200 { border-color: #475569 !important; }
+
+/* Text */
+html.dark .text-gray-800   { color: #f1f5f9 !important; }
+html.dark .text-gray-700   { color: #e2e8f0 !important; }
+html.dark .text-gray-600   { color: #cbd5e1 !important; }
+html.dark .text-gray-500   { color: #94a3b8 !important; }
+html.dark .text-gray-400   { color: #64748b !important; }
+
+/* Cart item rows */
+html.dark .bg-gray-50.rounded-xl { background-color: #1e293b !important; }
+
+/* Input fields */
+html.dark input {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+html.dark input::placeholder { color: #64748b; }
+
+/* Scrollbars */
+html.dark * { scrollbar-color: #334155 transparent; }
