@@ -1,6 +1,7 @@
 mod commands;
 mod db;
 mod order_store;
+mod printer;
 mod websocket;
 
 use std::sync::{Arc, Mutex};
@@ -129,6 +130,19 @@ pub fn run() {
             commands::app_state::clear_all_data,
             commands::app_state::get_app_state,
             commands::app_state::set_app_state,
+            // ── Printer ──────────────────────────────────────────────────────
+            commands::printer::get_printers,
+            commands::printer::get_active_printers,
+            commands::printer::get_printer,
+            commands::printer::save_printer,
+            commands::printer::delete_printer,
+            commands::printer::set_printer_active,
+            commands::printer::test_printer,
+            commands::printer::print_raw,
+            commands::printer::list_bluetooth_ports,
+            commands::printer::get_system_printers,
+            commands::printer::print_to_system_printer,
+            commands::printer::add_system_printer_to_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

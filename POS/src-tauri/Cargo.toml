@@ -29,4 +29,10 @@ log = "0.4"
 chrono = "0.4"
 rusqlite = { version = "0.32", features = ["bundled"] }
 uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
+printers = "2.2"
+serialport = "4.7"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.52"
 

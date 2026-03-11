@@ -6,6 +6,8 @@ import IncomingOrders from "./pages/IncomingOrders";
 import OrdersPage from "./pages/OrdersPage";
 import SettingsPage from "./pages/SettingsPage";
 import HeldOrdersPage from "./pages/HeldOrdersPage";
+import ConnectionSettingsPage from "./pages/settings/ConnectionSettingsPage";
+import PrinterSettingsPage from "./pages/settings/PrinterSettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -18,8 +20,10 @@ export const router = createBrowserRouter([
           { index: true, element: <MenuSelection /> },
           { path: "incoming", element: <IncomingOrders /> },
           { path: "orders", element: <OrdersPage /> },
-          { path: "settings", element: <SettingsPage /> },
           { path: "held-orders", element: <HeldOrdersPage /> },
+          { path: "settings", element: <SettingsPage /> },
+          { path: "settings/connection", element: <ConnectionSettingsPage /> },
+          { path: "settings/printers", element: <PrinterSettingsPage /> },
         ],
       },
     ],

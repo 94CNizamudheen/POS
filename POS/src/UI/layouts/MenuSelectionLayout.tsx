@@ -20,6 +20,8 @@ function WebView({ children }: { children?: ReactNode }) {
 const PAGE_TITLES: Record<string, string> = {
   "/orders": "Orders",
   "/incoming": "Incoming Orders",
+  "/settings/printers": "Printer Settings",
+  "/settings/connection": "Connection & Terminals",
   "/settings": "Settings",
   "/held-orders": "Held Orders",
 };
