@@ -18,7 +18,7 @@ export default function Products({ onAdd }: ProductsProps) {
           ))}
         </div>
       ) : (
-        <p className="text-center py-10 text-gray-400 text-sm">
+        <p className="text-center py-10 text-muted text-sm">
           No products found
         </p>
       )}

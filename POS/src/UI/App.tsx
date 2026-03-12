@@ -6,7 +6,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <OrderProvider>
-        <Outlet />
+        <div className="safe-area">
+          <Outlet />
+        </div>
       </OrderProvider>
     </ThemeProvider>
   );

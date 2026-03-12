@@ -14,6 +14,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useOrder } from "@/context/OrderContext";
 import userPng from "@/assets/user.png";
+import logoPng from "@/assets/Dine-in.png";
 
 const navItems = [
   { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/" },
@@ -39,7 +40,7 @@ export default function MenuSelectionSidebarMobile({
   const { incomingOrders } = useOrder();
   const incomingCount = incomingOrders.length;
 
-  function isActive(id: string, path: string | null) {
+  function isActive(_id: string, path: string | null) {
     if (path === "/") return location.pathname === "/";
     if (path) return location.pathname.startsWith(path);
     return false;
@@ -52,25 +53,21 @@ export default function MenuSelectionSidebarMobile({
   }
 
   return (
-    <div className="h-full w-full bg-white flex flex-col">
+    <div className="h-full w-full bg-surface-raised flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <span className="text-lg font-extrabold">
-          <span className="text-gray-800">Res</span>
-          <span className="text-green-500">t</span>
-          <span className="text-gray-800">aurant</span>
-        </span>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-subtle">
+        <img src={logoPng} alt="Logo" className="w-9 h-9 object-contain" />
         <button
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition"
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-sunken text-muted hover:bg-surface-sunken transition"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* User info */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-        <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 bg-gray-100">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-subtle">
+        <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 bg-surface-sunken">
           <img
             src={userPng}
             alt="cashier"
@@ -78,8 +75,8 @@ export default function MenuSelectionSidebarMobile({
           />
         </div>
         <div>
-          <p className="text-sm font-bold text-gray-800">Jhone Doe</p>
-          <p className="text-xs text-gray-400">Cashier</p>
+          <p className="text-sm font-bold text-primary">Jhone Doe</p>
+          <p className="text-xs text-muted">Cashier</p>
         </div>
       </div>
 
@@ -97,27 +94,29 @@ export default function MenuSelectionSidebarMobile({
               disabled={disabled}
               className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all active:scale-[0.98] ${
                 active
-                  ? "bg-green-50 border border-green-200"
+                  ? "bg-success-subtle border border-success"
                   : disabled
-                    ? "opacity-40 cursor-not-allowed bg-gray-50"
-                    : "bg-gray-50 hover:bg-gray-100"
+                    ? "opacity-40 cursor-not-allowed bg-surface"
+                    : "bg-surface hover:bg-surface-sunken"
               }`}
             >
               {/* Icon */}
               <div
                 className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                  active ? "bg-green-500" : "bg-white border border-gray-200"
+                  active
+                    ? "bg-success"
+                    : "bg-surface-raised border border-default"
                 }`}
               >
                 <Icon
-                  className={`w-4 h-4 ${active ? "text-white" : "text-gray-500"}`}
+                  className={`w-4 h-4 ${active ? "text-white" : "text-muted"}`}
                 />
               </div>
 
               {/* Label */}
               <span
                 className={`flex-1 text-sm font-medium text-left ${
-                  active ? "text-green-700 font-semibold" : "text-gray-700"
+                  active ? "text-success font-semibold" : "text-secondary"
                 }`}
               >
                 {label}
@@ -125,7 +124,7 @@ export default function MenuSelectionSidebarMobile({
 
               {/* Badge */}
               {badge > 0 && (
-                <span className="min-w-5 h-5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="min-w-5 h-5 px-1 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {badge > 9 ? "9+" : badge}
                 </span>
               )}
@@ -133,7 +132,7 @@ export default function MenuSelectionSidebarMobile({
               {/* Chevron */}
               {!disabled && (
                 <ChevronRight
-                  className={`w-4 h-4 shrink-0 ${active ? "text-green-400" : "text-gray-300"}`}
+                  className={`w-4 h-4 shrink-0 ${active ? "text-success" : "text-disabled"}`}
                 />
               )}
             </button>
@@ -141,9 +140,9 @@ export default function MenuSelectionSidebarMobile({
         })}
       </div>
 
-      {/* Footer — POS info */}
-      <div className="px-5 py-4 border-t border-gray-100">
-        <p className="text-xs text-gray-400 text-center">POS System v1.0</p>
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-subtle">
+        <p className="text-xs text-muted text-center">POS System v1.0</p>
       </div>
     </div>
   );

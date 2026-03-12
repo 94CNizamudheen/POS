@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, Bell, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import logoPng from "@/assets/Dine-in.png";
 import { useProducts } from "@/context/ProductContext";
 import { useOrder } from "@/context/OrderContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
@@ -122,7 +123,9 @@ export default function MobileView() {
 
   const handleIncrease = (id: string) => {
     setCartItems((prev) => {
-      const next = prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i));
+      const next = prev.map((i) =>
+        i.id === id ? { ...i, qty: i.qty + 1 } : i,
+      );
       if (isAssistanceMode && activeOrder) {
         const item = next.find((i) => i.id === id);
         if (item) changeItemQty(activeOrder.orderId, id, item.qty);
@@ -161,53 +164,49 @@ export default function MobileView() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex flex-col h-screen bg-surface font-sans overflow-hidden safe-area">
       <KioskSentBanner onRecall={(items) => setCartItems(items)} />
 
       {/* Fixed top header */}
-      <header className="bg-white border-b border-gray-100 shadow-sm z-30 shrink-0">
+      <header className="bg-surface-raised border-b border-subtle shadow-sm z-30 shrink-0">
         <div className="flex items-center gap-2 px-4 h-14">
           {/* Menu button */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition shrink-0"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-sunken text-secondary hover:bg-surface-sunken transition shrink-0"
           >
             <Menu className="w-5 h-5" />
           </button>
 
           {/* Brand */}
-          <div className="flex-1 min-w-0">
-            <span className="text-base font-extrabold leading-none">
-              <span className="text-gray-800">Res</span>
-              <span className="text-green-500">t</span>
-              <span className="text-gray-800">aurant</span>
-            </span>
+          <div className="flex-1 min-w-0 flex items-center">
+            <img src={logoPng} alt="Logo" className="h-8 w-8 object-contain" />
           </div>
 
           {/* Search toggle */}
           <div ref={searchRef} className="relative">
             <button
               onClick={() => setShowSearch((v) => !v)}
-              className="w-9 h-9 flex items-center justify-center bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
+              className="w-9 h-9 flex items-center justify-center bg-success text-white rounded-xl hover:bg-success transition"
             >
               <Search className="w-4 h-4" />
             </button>
             {showSearch && (
-              <div className="absolute right-0 top-11 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-3 z-50">
+              <div className="absolute right-0 top-11 w-72 bg-surface-raised rounded-2xl shadow-xl border border-subtle p-3 z-50">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
                   <input
                     autoFocus
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search menu..."
-                    className="w-full pl-9 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
+                    className="input-field pl-9 pr-8 py-2 focus:border-success"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-secondary"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -221,29 +220,29 @@ export default function MobileView() {
           <div ref={bellRef} className="relative">
             <button
               onClick={() => setShowNotifications((v) => !v)}
-              className="relative w-9 h-9 flex items-center justify-center bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
+              className="relative w-9 h-9 flex items-center justify-center bg-success text-white rounded-xl hover:bg-success transition"
             >
               <Bell className="w-4 h-4" />
               {totalCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 bg-danger text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {totalCount}
                 </span>
               )}
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 top-11 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
-                <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
-                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <div className="absolute right-0 top-11 w-72 bg-surface-raised rounded-2xl shadow-xl border border-subtle overflow-hidden z-50">
+                <div className="px-4 py-2.5 border-b border-subtle flex items-center justify-between">
+                  <span className="text-xs font-bold text-secondary uppercase tracking-wider">
                     Notifications
                   </span>
                   {totalCount > 0 && (
-                    <span className="text-[10px] font-semibold text-gray-400">
+                    <span className="text-[10px] font-semibold text-muted">
                       {totalCount} new
                     </span>
                   )}
                 </div>
-                <div className="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                <div className="max-h-72 overflow-y-auto divide-y divide-subtle">
                   {incomingOrders.map((order) => (
                     <button
                       key={order.orderId}
@@ -251,14 +250,14 @@ export default function MobileView() {
                         setShowNotifications(false);
                         navigate("/incoming");
                       }}
-                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition text-left"
+                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-surface transition text-left"
                     >
-                      <span className="mt-0.5 w-2 h-2 rounded-full bg-green-500 shrink-0" />
+                      <span className="mt-0.5 w-2 h-2 rounded-full bg-success shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">
+                        <p className="text-sm font-semibold text-primary truncate">
                           New order #{order.orderNumber}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-muted mt-0.5">
                           From {order.originTerminal.terminalId} · $
                           {order.total.toFixed(2)}
                         </p>
@@ -271,22 +270,22 @@ export default function MobileView() {
                         clearNotification();
                         setShowNotifications(false);
                       }}
-                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition text-left"
+                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-surface transition text-left"
                     >
-                      <span className="mt-0.5 w-2 h-2 rounded-full bg-yellow-400 shrink-0" />
+                      <span className="mt-0.5 w-2 h-2 rounded-full bg-warning shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800">
+                        <p className="text-sm font-semibold text-primary">
                           {notification}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-muted mt-0.5">
                           Tap to dismiss
                         </p>
                       </div>
-                      <X className="w-3.5 h-3.5 text-gray-300 shrink-0 mt-0.5" />
+                      <X className="w-3.5 h-3.5 text-disabled shrink-0 mt-0.5" />
                     </button>
                   )}
                   {totalCount === 0 && (
-                    <div className="px-4 py-6 text-center text-sm text-gray-400">
+                    <div className="px-4 py-6 text-center text-sm text-muted">
                       No new notifications
                     </div>
                   )}
@@ -298,8 +297,8 @@ export default function MobileView() {
 
         {/* Active order banner */}
         {activeOrder && (
-          <div className="bg-yellow-50 border-t border-yellow-200 px-4 py-2">
-            <p className="text-xs font-semibold text-yellow-800">
+          <div className="bg-warning-subtle border-t border-warning px-4 py-2">
+            <p className="text-xs font-semibold text-warning">
               {activeOrder.originTerminal.type === "KIOSK"
                 ? `Assisting customer · Order #${activeOrder.orderNumber}`
                 : `Editing order #${activeOrder.orderNumber}`}
@@ -309,7 +308,7 @@ export default function MobileView() {
       </header>
 
       {/* Sticky tabs */}
-      <div className="bg-white border-b border-gray-100 z-20 shrink-0">
+      <div className="bg-surface-raised border-b border-subtle z-20 shrink-0">
         <MobileProductGroupTabs />
         <MobileCategoryTabs />
       </div>
@@ -327,7 +326,7 @@ export default function MobileView() {
             ))}
           </div>
         ) : (
-          <p className="text-center py-10 text-gray-400 text-sm">
+          <p className="text-center py-10 text-muted text-sm">
             No products found
           </p>
         )}
@@ -352,7 +351,7 @@ export default function MobileView() {
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-overlay"
             onClick={() => setSidebarOpen(false)}
           />
           <div className="relative w-[80%] max-w-xs h-full shadow-2xl">

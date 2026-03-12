@@ -12,11 +12,11 @@ export default function ProductGroupTab() {
           <button
             key={group.id}
             onClick={() => setSelectedGroup(group.id)}
-            className={`px-15 py-4 rounded-lg border-4 text-sm whitespace-nowrap transition-all 
+            className={`px-15 py-4 rounded-lg border-4 text-sm whitespace-nowrap transition-all
               ${
                 selectedGroup === group.id
-                  ? "bg-green-500 text-white border-green-500 shadow-sm"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-green-300"
+                  ? "bg-success text-white border-success shadow-sm"
+                  : "bg-surface-raised text-secondary border-default hover:border-success"
               }`}
           >
             {group.name}

@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.service
+package com.nizamc.pos.service
 
 import android.Manifest
 import android.content.Context

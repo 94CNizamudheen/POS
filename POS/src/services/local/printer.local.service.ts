@@ -153,6 +153,30 @@ export const printerService = {
     return null;
   },
 
+  listUsbDevices(): { count: number; devices: unknown[]; error?: string } | null {
+    if (typeof window !== "undefined" && window.BuiltinPrinter?.listUsbDevices) {
+      try {
+        return JSON.parse(window.BuiltinPrinter.listUsbDevices());
+      } catch (e) {
+        console.error("Failed to list USB devices:", e);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  listSerialPorts(): { count: number; ports: string[]; error?: string } | null {
+    if (typeof window !== "undefined" && window.BuiltinPrinter?.listSerialPorts) {
+      try {
+        return JSON.parse(window.BuiltinPrinter.listSerialPorts());
+      } catch (e) {
+        console.error("Failed to list serial ports:", e);
+        return null;
+      }
+    }
+    return null;
+  },
+
   async getAllPrinters(): Promise<Printer[]> {
     return invoke("get_printers");
   },

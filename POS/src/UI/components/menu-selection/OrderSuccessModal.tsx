@@ -23,10 +23,10 @@ export default function OrderSuccessModal({ order, onClose }: Props) {
   const PayIcon = paymentIcon[method] ?? Banknote;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm">
+      <div className="bg-surface-raised rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
         {/* Header */}
-        <div className="bg-green-400 px-6 py-6 flex flex-col items-center gap-2">
+        <div className="bg-success px-6 py-6 flex flex-col items-center gap-2">
           <CheckCircle className="w-14 h-14 text-white" strokeWidth={1.5} />
           <h2 className="text-white text-xl font-bold tracking-wide">
             Order Complete!
@@ -37,16 +37,16 @@ export default function OrderSuccessModal({ order, onClose }: Props) {
         </div>
 
         {/* Items */}
-        <div className="px-6 py-4 max-h-48 overflow-y-auto border-b border-gray-100">
+        <div className="px-6 py-4 max-h-48 overflow-y-auto border-b border-subtle">
           {order.items.map((item) => (
             <div
               key={item.productId}
               className="flex justify-between text-sm py-1"
             >
-              <span className="text-gray-700">
-                {item.name} <span className="text-gray-400">× {item.qty}</span>
+              <span className="text-secondary">
+                {item.name} <span className="text-muted">× {item.qty}</span>
               </span>
-              <span className="text-gray-600 font-medium">
+              <span className="text-secondary font-medium">
                 ${item.subtotal.toFixed(2)}
               </span>
             </div>
@@ -54,24 +54,24 @@ export default function OrderSuccessModal({ order, onClose }: Props) {
         </div>
 
         {/* Totals */}
-        <div className="px-6 py-3 flex flex-col gap-1 border-b border-dashed border-gray-200">
-          <div className="flex justify-between text-xs text-gray-500">
+        <div className="px-6 py-3 flex flex-col gap-1 border-b border-dashed border-default">
+          <div className="flex justify-between text-xs text-muted">
             <span>Subtotal</span>
             <span>${order.subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs text-muted">
             <span>Tax 10%</span>
             <span>${order.tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm font-bold mt-1">
-            <span className="text-red-500">Total</span>
-            <span className="text-green-600">${order.total.toFixed(2)}</span>
+            <span className="text-danger">Total</span>
+            <span className="text-success">${order.total.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Payment method */}
-        <div className="px-6 py-3 flex items-center gap-2 text-sm text-gray-600 border-b border-gray-100">
-          <PayIcon className="w-4 h-4 text-green-500" />
+        <div className="px-6 py-3 flex items-center gap-2 text-sm text-secondary border-b border-subtle">
+          <PayIcon className="w-4 h-4 text-success" />
           <span>
             Paid via <strong>{paymentLabel[method]}</strong>
           </span>
@@ -81,7 +81,7 @@ export default function OrderSuccessModal({ order, onClose }: Props) {
         <div className="px-6 py-4">
           <button
             onClick={onClose}
-            className="w-full py-3 bg-green-400 hover:bg-green-500 text-white font-bold rounded-xl transition text-sm"
+            className="w-full py-3 bg-success hover:bg-success text-white font-bold rounded-xl transition text-sm"
           >
             New Order
           </button>

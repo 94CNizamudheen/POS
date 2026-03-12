@@ -50,18 +50,16 @@ export default function KioskSentBanner({ onRecall }: KioskSentBannerProps) {
 
   function handleCancel() {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    // Restore items to POS cart before recalling (with media/images enriched from catalog)
     onRecall(enrichLineItems(order.items));
-    // Recall the order from server — KIOSK receives ORDER_CANCELLED and deletes from its DB
     releaseOrder(order.orderId);
     clearKioskSentOrder();
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 w-80 rounded-2xl bg-white shadow-2xl border border-gray-100 overflow-hidden">
+    <div className="fixed top-4 right-4 z-50 w-80 rounded-2xl bg-surface-raised shadow-2xl border border-subtle overflow-hidden">
       {/* Countdown progress bar */}
       <div
-        className="h-1 bg-green-400 transition-all duration-1000 ease-linear"
+        className="h-1 bg-success transition-all duration-1000 ease-linear"
         style={{ width: `${(countdown / 5) * 100}%` }}
       />
 
@@ -69,25 +67,25 @@ export default function KioskSentBanner({ onRecall }: KioskSentBannerProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-              <Send className="w-4 h-4 text-green-600" />
+            <div className="w-8 h-8 rounded-full bg-success-subtle flex items-center justify-center">
+              <Send className="w-4 h-4 text-success" />
             </div>
-            <span className="font-bold text-sm text-gray-800">Sent to Kiosk</span>
+            <span className="font-bold text-sm text-primary">Sent to Kiosk</span>
           </div>
-          <span className="text-xs text-gray-400 font-semibold tabular-nums">
+          <span className="text-xs text-muted font-semibold tabular-nums">
             {countdown}s
           </span>
         </div>
 
-        {/* Order number — the key info for the cashier */}
-        <div className="rounded-xl bg-amber-50 border-2 border-amber-300 px-4 py-3 flex flex-col items-center gap-0.5">
-          <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
+        {/* Order number */}
+        <div className="rounded-xl bg-warning-subtle border-2 border-warning px-4 py-3 flex flex-col items-center gap-0.5">
+          <p className="text-[10px] font-bold text-warning uppercase tracking-widest">
             Give this number to the customer
           </p>
-          <p className="text-4xl font-black tracking-widest text-amber-700">
+          <p className="text-4xl font-black tracking-widest text-warning">
             #{order.orderNumber}
           </p>
-          <p className="text-[10px] text-amber-500 text-center leading-tight mt-0.5">
+          <p className="text-[10px] text-warning text-center leading-tight mt-0.5">
             Customer enters this at the kiosk to continue
           </p>
         </div>
@@ -95,7 +93,7 @@ export default function KioskSentBanner({ onRecall }: KioskSentBannerProps) {
         {/* Cancel / recall */}
         <button
           onClick={handleCancel}
-          className="w-full py-2 rounded-xl border-2 border-red-200 text-red-500 font-bold text-xs hover:bg-red-50 hover:border-red-400 transition-all flex items-center justify-center gap-1.5"
+          className="w-full py-2 rounded-xl border-2 border-danger text-danger font-bold text-xs hover:bg-danger-subtle hover:border-danger transition-all flex items-center justify-center gap-1.5"
         >
           <X className="w-3.5 h-3.5" />
           Cancel &amp; Recall Order

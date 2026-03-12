@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import {
   Wifi, Monitor, Bluetooth, Usb, RefreshCw,
-  CheckCircle, XCircle, Plus, Cpu,
+  CheckCircle, XCircle, Plus, Cpu, ChevronRight,
 } from "lucide-react";
 import type { Printer, SystemPrinter } from "@/types/printer";
 import { printerService } from "@/services/local/printer.local.service";
 import { useNotification } from "@/context/NotificationContext";
+import { usePlatform } from "@/hooks/usePlatform";
+import BluetoothScanModal from "./BluetoothScanModal";
 
 type ConnType = "network" | "usb" | "bluetooth" | "system" | "builtin";
 
@@ -53,6 +55,7 @@ const selectorIdle = {
 } as React.CSSProperties;
 
 export default function PrinterForm({ editing, onClose, onSuccess }: Props) {
+  const { isAndroid } = usePlatform();
   const [form, setForm] = useState<Printer>(editing ?? newPrinter());
   const [isNew] = useState(!editing?.created_at);
   const [saving, setSaving] = useState(false);
@@ -60,6 +63,8 @@ export default function PrinterForm({ editing, onClose, onSuccess }: Props) {
   const [systemPrinters, setSystemPrinters] = useState<SystemPrinter[]>([]);
   const [loadingSystem, setLoadingSystem] = useState(false);
 
+  // Bluetooth scan modal (Android) + COM port scan (desktop)
+  const [btModalOpen, setBtModalOpen] = useState(false);
   const [btPorts, setBtPorts] = useState<{ name: string; label: string; is_bluetooth: boolean }[]>([]);
   const [loadingBt, setLoadingBt] = useState(false);
   const [btTestStatus, setBtTestStatus] = useState<"idle" | "testing" | "ok" | "fail">("idle");
@@ -252,50 +257,98 @@ export default function PrinterForm({ editing, onClose, onSuccess }: Props) {
           {/* Bluetooth */}
           {form.printer_type === "bluetooth" && (
             <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-secondary">Bluetooth COM Port</label>
-                  <button
-                    type="button"
-                    onClick={loadBtPorts}
-                    disabled={loadingBt}
-                    className="btn-ghost flex items-center gap-1 text-xs px-2 py-1"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${loadingBt ? "animate-spin" : ""}`} />
-                    Scan
-                  </button>
-                </div>
-
-                {btPorts.length > 0 ? (
-                  <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {btPorts.map((p) => {
-                      const sel = form.bluetooth_address === p.name;
-                      return (
+              {isAndroid ? (
+                /* ── Android: scan modal to pick a paired BT printer ── */
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1.5">
+                    Bluetooth Printer
+                  </label>
+                  {form.bluetooth_address ? (
+                    /* Device already selected */
+                    <div className="space-y-2">
+                      <div
+                        className="flex items-center justify-between p-3 rounded-xl border-2"
+                        style={{ borderColor: "var(--color-info)", backgroundColor: "var(--color-info-subtle)" }}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-primary truncate">
+                            {form.name || form.bluetooth_address}
+                          </p>
+                          <p className="text-xs text-muted font-mono">{form.bluetooth_address}</p>
+                        </div>
                         <button
-                          key={p.name}
                           type="button"
-                          onClick={() => update({ bluetooth_address: p.name, name: form.name || p.label })}
-                          style={sel ? selectorActive : selectorIdle}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border transition text-left"
+                          onClick={() => setBtModalOpen(true)}
+                          className="text-xs font-semibold ml-2 shrink-0"
+                          style={{ color: "var(--color-info-text)" }}
                         >
-                          <span className="text-xs font-medium text-secondary">{p.label}</span>
-                          <span className="text-xs font-mono text-muted">{p.name}</span>
+                          Change
                         </button>
-                      );
-                    })}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Nothing selected yet */
+                    <button
+                      type="button"
+                      onClick={() => setBtModalOpen(true)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border-2 border-dashed border-default hover:border-strong bg-surface-raised transition active:scale-95"
+                    >
+                      <span className="text-sm text-muted">No device selected</span>
+                      <span className="flex items-center gap-1 text-sm font-semibold" style={{ color: "var(--color-info-text)" }}>
+                        <Bluetooth className="w-4 h-4" />
+                        Scan & Select
+                        <ChevronRight className="w-4 h-4" />
+                      </span>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                /* ── Desktop: scan COM ports ── */
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-secondary">Bluetooth COM Port</label>
+                    <button
+                      type="button"
+                      onClick={loadBtPorts}
+                      disabled={loadingBt}
+                      className="btn-ghost flex items-center gap-1 text-xs px-2 py-1"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${loadingBt ? "animate-spin" : ""}`} />
+                      Scan
+                    </button>
                   </div>
-                ) : (
-                  <input
-                    type="text"
-                    placeholder="COM5 or 00:11:22:33:44:55"
-                    value={form.bluetooth_address ?? ""}
-                    onChange={(e) => update({ bluetooth_address: e.target.value })}
-                    className="input-field font-mono"
-                  />
-                )}
-              </div>
 
-              {/* BT test */}
+                  {btPorts.length > 0 ? (
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {btPorts.map((p) => {
+                        const sel = form.bluetooth_address === p.name;
+                        return (
+                          <button
+                            key={p.name}
+                            type="button"
+                            onClick={() => update({ bluetooth_address: p.name, name: form.name || p.label })}
+                            style={sel ? selectorActive : selectorIdle}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg border transition text-left"
+                          >
+                            <span className="text-xs font-medium text-secondary">{p.label}</span>
+                            <span className="text-xs font-mono text-muted">{p.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="COM5 or 00:11:22:33:44:55"
+                      value={form.bluetooth_address ?? ""}
+                      onChange={(e) => update({ bluetooth_address: e.target.value })}
+                      className="input-field font-mono"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* BT connection test (both platforms) */}
               {form.bluetooth_address && (
                 <div className="flex items-center gap-2">
                   <button
@@ -321,6 +374,17 @@ export default function PrinterForm({ editing, onClose, onSuccess }: Props) {
                   )}
                 </div>
               )}
+
+              {/* Bluetooth scan modal (Android) */}
+              <BluetoothScanModal
+                open={btModalOpen}
+                onClose={() => setBtModalOpen(false)}
+                isAndroid={isAndroid}
+                onSelect={(device) => {
+                  const cleanName = device.name.replace(/\s*\(COM\d+\)\s*$/i, "").trim();
+                  update({ bluetooth_address: device.address, name: form.name.trim() || cleanName });
+                }}
+              />
             </div>
           )}
 

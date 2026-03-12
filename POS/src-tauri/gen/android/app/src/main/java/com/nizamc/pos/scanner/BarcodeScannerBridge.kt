@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.scanner
+package com.nizamc.pos.scanner
 
 import android.app.Activity
 import android.content.BroadcastReceiver

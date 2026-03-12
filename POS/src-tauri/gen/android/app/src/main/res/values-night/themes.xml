@@ -1,6 +1,28 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.pos" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
+    <!-- Dark mode overrides — must mirror the light theme's safe-area settings -->
+    <style name="Theme.pos" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- ── Edge-to-edge: transparent system bars ──────────────────── -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <!-- Light icons on status/nav bars -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+
+        <!-- Draw behind system bars & extend into display cutout -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+
+        <!-- Extend content into notch/cutout (API 28+) -->
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="p">shortEdges</item>
+
+        <!-- No action bar -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+
+        <!-- Brand colors (dark mode) -->
+        <item name="colorPrimary">@color/primary_blue_light</item>
+        <item name="colorPrimaryDark">@color/primary_blue</item>
     </style>
 </resources>

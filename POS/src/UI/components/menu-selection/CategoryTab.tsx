@@ -31,7 +31,7 @@ export default function CategoryTab() {
   if (!categories.length) return null;
 
   return (
-    <aside className="w-[14%] shrink-0 h-full overflow-y-auto border-r border-gray-100 bg-white pt-2">
+    <aside className="w-[14%] shrink-0 h-full overflow-y-auto border-r border-subtle bg-surface-raised pt-2">
       <div className="flex flex-col gap-1.5 p-2">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat.id;
@@ -42,8 +42,8 @@ export default function CategoryTab() {
               className={`w-full rounded-xl text-xs font-medium text-left transition-all border-4 overflow-hidden
                 ${
                   isActive
-                    ? "border-green-500 shadow-sm"
-                    : "border-gray-100 hover:border-green-300"
+                    ? "border-success shadow-sm"
+                    : "border-subtle hover:border-success"
                 }`}
             >
               <img
@@ -53,7 +53,7 @@ export default function CategoryTab() {
               />
               <div
                 className={`px-2 py-1.5 text-center
-                ${isActive ? "bg-green-500 text-white" : "bg-gray-50 text-gray-600"}`}
+                ${isActive ? "bg-success text-white" : "bg-surface text-secondary"}`}
               >
                 {cat.name}
               </div>

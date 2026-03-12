@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.display
+package com.nizamc.pos.display
 
 import android.annotation.SuppressLint
 import android.app.Presentation

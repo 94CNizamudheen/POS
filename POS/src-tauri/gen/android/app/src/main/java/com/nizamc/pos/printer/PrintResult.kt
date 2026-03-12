@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.printer
+package com.nizamc.pos.printer
 
 data class PrintResult(
     val success: Boolean,

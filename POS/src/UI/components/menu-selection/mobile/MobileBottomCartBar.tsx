@@ -18,12 +18,12 @@ export default function MobileBottomCartBar({
       <button
         id="cart-button"
         onClick={onOpen}
-        className="w-full bg-green-500 text-white rounded-2xl px-5 py-3.5 flex items-center justify-between shadow-lg shadow-green-200 active:bg-green-600 transition"
+        className="w-full bg-success text-white rounded-2xl px-5 py-3.5 flex items-center justify-between shadow-lg active:bg-success transition"
       >
         <div className="flex items-center gap-3">
           <div className="relative">
             <ShoppingCart className="w-5 h-5" />
-            <span className="absolute -top-2 -right-2 min-w-4 h-4 px-0.5 bg-white text-green-600 text-[9px] font-black rounded-full flex items-center justify-center">
+            <span className="absolute -top-2 -right-2 min-w-4 h-4 px-0.5 bg-surface-raised text-success text-[9px] font-black rounded-full flex items-center justify-center">
               {itemCount > 9 ? "9+" : itemCount}
             </span>
           </div>

@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.printer
+package com.nizamc.pos.printer
 
 import android.app.PendingIntent
 import android.content.Context
@@ -16,7 +16,7 @@ class PrinterBridge(private val context: Context) {
     companion object {
         private const val TAG = "PrinterBridge"
         const val JS_INTERFACE_NAME = "BuiltinPrinter"
-        private const val ACTION_USB_PERMISSION = "com.hashone.hashoneplat.USB_PERMISSION"
+        private const val ACTION_USB_PERMISSION = "com.nizamc.pos.USB_PERMISSION"
     }
 
     // ✅ UNIVERSAL PRINTER MANAGER (STEP 6)

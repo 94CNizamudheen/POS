@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.printer
+package com.nizamc.pos.printer
 
 import android.app.PendingIntent
 import android.content.Context
@@ -13,7 +13,7 @@ class UsbPrinterAdapter(private val context: Context) {
         context.getSystemService(Context.USB_SERVICE) as UsbManager
 
     companion object {
-        const val ACTION_USB_PERMISSION = "com.hashone.hashoneplat.USB_PERMISSION"
+        const val ACTION_USB_PERMISSION = "com.nizamc.pos.USB_PERMISSION"
     }
 
     // --------------------------------------------------

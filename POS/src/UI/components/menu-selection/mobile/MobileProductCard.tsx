@@ -37,7 +37,7 @@ export default function MobileProductCard({
     <div
       ref={cardRef}
       onClick={handleAdd}
-      className="bg-white rounded-xl flex flex-col shadow-sm border border-gray-100 active:scale-95 transition-transform duration-100 cursor-pointer overflow-hidden"
+      className="bg-surface-raised rounded-xl flex flex-col shadow-sm border border-subtle active:scale-95 transition-transform duration-100 cursor-pointer overflow-hidden"
     >
       <img
         src={imageUrl}
@@ -48,15 +48,15 @@ export default function MobileProductCard({
         }}
       />
       <div className="p-2 flex flex-col gap-1">
-        <p className="text-xs font-bold text-gray-800 line-clamp-2 leading-tight">
+        <p className="text-xs font-bold text-primary line-clamp-2 leading-tight">
           {product.name}
         </p>
         <div className="flex items-center justify-between gap-1">
-          <span className="text-xs font-semibold text-green-600">
+          <span className="text-xs font-semibold text-success">
             ${product.price.toFixed(2)}
           </span>
           <button
-            className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold hover:bg-green-600 transition shrink-0"
+            className="w-6 h-6 rounded-full bg-success text-white flex items-center justify-center text-sm font-bold hover:bg-success transition shrink-0"
             onClick={(e) => {
               e.stopPropagation();
               handleAdd();

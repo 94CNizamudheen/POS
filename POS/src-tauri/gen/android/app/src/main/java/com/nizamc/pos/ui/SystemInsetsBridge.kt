@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.ui
+package com.nizamc.pos.ui
 
 import android.app.Activity
 import android.graphics.Rect

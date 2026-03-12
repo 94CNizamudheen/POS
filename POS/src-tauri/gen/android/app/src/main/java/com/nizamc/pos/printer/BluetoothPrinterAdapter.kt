@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.printer
+package com.nizamc.pos.printer
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter

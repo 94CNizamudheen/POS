@@ -24,6 +24,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/settings/connection": "Connection & Terminals",
   "/settings": "Settings",
   "/held-orders": "Held Orders",
+  "/payment": "Payment",
 };
 
 const FULL_SCREEN_PATHS = Object.keys(PAGE_TITLES);
@@ -44,6 +45,11 @@ export default function MenuSelectionLayout() {
     Object.entries(PAGE_TITLES).find(([p]) =>
       location.pathname.startsWith(p),
     )?.[1] ?? "";
+
+  // Payment page manages its own full-screen layout on mobile
+  if (!isDesktop && location.pathname.startsWith("/payment")) {
+    return <Outlet />;
+  }
 
   // On mobile, secondary pages get a simple back-nav header
   if (!isDesktop && isFullScreenPage) {
@@ -68,7 +74,7 @@ export default function MenuSelectionLayout() {
   return (
     <ProductProvider>
       <AnimationProvider>
-        <div className="w-full h-full">
+        <div className="w-full h-full safe-area">
           {isDesktop ? (
             <Desktop>
               <Outlet />

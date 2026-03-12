@@ -10,7 +10,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <main className="flex-1 overflow-y-auto px-8 py-6">
+      <main className="flex-1 overflow-y-auto px-8 py-6 safe-area">
         <h1 className="text-lg font-bold text-gray-800 mb-1">Settings</h1>
         <p className="text-sm text-gray-400 mb-6">Configure your POS system</p>
 
@@ -25,19 +25,25 @@ export default function SettingsPage() {
                   onClick={() => navigate(item.path)}
                   className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all text-left p-5 flex items-start gap-4"
                 >
-                  <div className={`w-11 h-11 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
+                  <div
+                    className={`w-11 h-11 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}
+                  >
                     <Icon className={`w-5 h-5 ${item.iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-gray-800">{item.title}</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {item.title}
+                      </p>
                       {item.badge && (
                         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                           {item.badge}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{item.description}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                      {item.description}
+                    </p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition shrink-0 mt-0.5" />
                 </button>
@@ -54,9 +60,12 @@ export default function SettingsPage() {
           <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 gap-4">
               <div>
-                <p className="text-sm font-semibold text-gray-800">Clear All Data</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  Clear All Data
+                </p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Permanently delete all orders and held orders from this device.
+                  Permanently delete all orders and held orders from this
+                  device.
                 </p>
               </div>
               <button

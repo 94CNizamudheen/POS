@@ -1,0 +1,17 @@
+
+align
+cd "C:\Users\NizamC\CN\POS\POS\src-tauri\gen\android\app\build\outputs\apk\universal\release"
+
+& "C:\Users\NizamC\AppData\Local\Android\Sdk\build-tools\36.1.0\zipalign.exe" -v 4 `
+app-universal-release-unsigned.apk `
+app-universal-aligned.apk
+
+PS C:\Users\NizamC\CN\POS\POS\src-tauri\gen\android\app\build\outputs\apk\universal\release> & "C:\Users\NizamC\AppData\Local\Android\Sdk\build-tools\36.1.0\zipalign.exe" -v 4 app-universal-release-unsigned.apk app-universal-aligned.apk
+
+PS C:\Users\NizamC\CN\POS\POS\src-tauri\gen\android\app\build\outputs\apk\universal\release>  & "C:\Users\NizamC\AppData\Local\Android\Sdk\build-tools\36.1.0\apksigner.bat" sign `
+>> --ks "C:\Users\NizamC\keystores\pos-release.keystore" `
+>> --ks-key-alias hashone `
+>> --ks-pass pass:Password `
+>> --key-pass pass:Password `
+>> --out "pos.apk" `
+>> "app-universal-aligned.apk"

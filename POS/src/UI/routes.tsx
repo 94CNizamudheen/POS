@@ -8,6 +8,7 @@ import SettingsPage from "./pages/SettingsPage";
 import HeldOrdersPage from "./pages/HeldOrdersPage";
 import ConnectionSettingsPage from "./pages/settings/ConnectionSettingsPage";
 import PrinterSettingsPage from "./pages/settings/PrinterSettingsPage";
+import PaymentPage from "./pages/PaymentPage";
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
           { path: "settings", element: <SettingsPage /> },
           { path: "settings/connection", element: <ConnectionSettingsPage /> },
           { path: "settings/printers", element: <PrinterSettingsPage /> },
+          { path: "payment", element: <PaymentPage /> },
         ],
       },
     ],

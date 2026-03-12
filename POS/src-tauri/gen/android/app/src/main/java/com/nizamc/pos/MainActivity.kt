@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat
+package com.nizamc.pos
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -14,13 +14,13 @@ import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.hashone.hashoneplat.printer.PrinterBridge
-import com.hashone.hashoneplat.service.WebSocketServiceBridge
-import com.hashone.hashoneplat.ui.SystemInsetsBridge
-import com.hashone.hashoneplat.display.CustomerDisplayBridge
-import com.hashone.hashoneplat.display.CustomerDisplayMediaCache
-import com.hashone.hashoneplat.scanner.BarcodeScannerBridge
-import com.hashone.hashoneplat.printer.UsbPrinterAdapter
+import com.nizamc.pos.printer.PrinterBridge
+import com.nizamc.pos.service.WebSocketServiceBridge
+import com.nizamc.pos.ui.SystemInsetsBridge
+import com.nizamc.pos.display.CustomerDisplayBridge
+import com.nizamc.pos.display.CustomerDisplayMediaCache
+import com.nizamc.pos.scanner.BarcodeScannerBridge
+import com.nizamc.pos.printer.UsbPrinterAdapter
 
 class MainActivity : TauriActivity() {
 

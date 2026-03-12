@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import userPng from "@/assets/user.png";
+import logoPng from "@/assets/Dine-in.png";
 import { useOrder } from "@/context/OrderContext";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -49,19 +50,15 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
   }
 
   return (
-    <aside className="w-[7%] h-full bg-white border-r border-gray-100 flex flex-col items-center py-4 gap-2 shrink-0">
-      {/* Restaurant logo */}
+    <aside className="w-[7%] h-full bg-surface-raised border-r border-subtle flex flex-col items-center py-4 gap-2 shrink-0">
+      {/* Logo */}
       <div className="flex flex-col items-center mb-1 px-2">
-        <span className="text-xl font-extrabold text-center leading-tight">
-          <span className="text-gray-800">Res</span>
-          <span className="text-green-500">t</span>
-          <span className="text-gray-800">aurant</span>
-        </span>
-        <p className="text-[10px] text-gray-400 font-medium tracking-wide">
+        <img src={logoPng} alt="Logo" className="w-10 h-10 object-contain" />
+        <p className="text-[10px] text-muted font-medium tracking-wide mt-0.5">
           POS System
         </p>
       </div>
-      <div className="w-3/4 h-px bg-gray-100 mb-1" />
+      <div className="w-3/4 h-px bg-subtle mb-1" />
 
       {/* Cashier */}
       <div className="flex flex-col items-center mb-4">
@@ -72,7 +69,7 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
             className="w-full h-full object-cover"
           />
         </div>
-        <p className="text-xs font-bold text-gray-800 text-center">Jhone Doe</p>
+        <p className="text-xs font-bold text-primary text-center">Jhone Doe</p>
       </div>
 
       <nav className="w-full flex flex-col items-center gap-1 px-2">
@@ -87,16 +84,16 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
               className={`relative w-full flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all text-xs font-medium
                 ${
                   isActive
-                    ? "bg-green-500 text-white shadow-md shadow-green-200"
+                    ? "bg-success text-white shadow-md"
                     : path
-                      ? "text-gray-500 hover:bg-gray-100"
-                      : "text-gray-300 cursor-not-allowed"
+                      ? "text-muted hover:bg-surface-sunken"
+                      : "text-disabled cursor-not-allowed"
                 }`}
             >
               <span className="relative">
                 <Icon className="w-5 h-5" />
                 {count > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 bg-danger text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                     {count}
                   </span>
                 )}
@@ -111,14 +108,14 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
         {theme === "dark" ? (
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-strong bg-surface-sunken text-secondary hover:bg-surface-sunken transition"
           >
             <Sun className="w-3 h-3" /> Light
           </button>
         ) : (
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-strong bg-surface-sunken text-secondary hover:bg-surface-sunken transition"
           >
             <Moon className="w-3 h-3" /> Dark
           </button>

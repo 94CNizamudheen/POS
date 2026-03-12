@@ -150,8 +150,8 @@ export default function MenuSelection() {
       <KioskSentBanner onRecall={(items) => setCartItems(items)} />
 
       {activeOrder && (
-        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 flex items-center justify-between gap-4">
-          <span className="text-sm font-semibold text-yellow-800">
+        <div className="bg-warning-subtle border-b border-warning px-6 py-2 flex items-center justify-between gap-4">
+          <span className="text-sm font-semibold text-warning">
             {activeOrder.originTerminal.type === "KIOSK"
               ? `Assisting customer · Order #${activeOrder.orderNumber} — changes sync to KIOSK in real-time`
               : `Editing order #${activeOrder.orderNumber} — changes sync to KIOSK in real-time`}
@@ -164,7 +164,7 @@ export default function MenuSelection() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header />
           {/* Product group tabs — top */}
-          <div className="px-4 pt-3 pb-2 border-b border-gray-100 bg-white">
+          <div className="px-4 pt-3 pb-2 border-b border-subtle bg-surface-raised">
             <ProductGroupTab />
           </div>
 

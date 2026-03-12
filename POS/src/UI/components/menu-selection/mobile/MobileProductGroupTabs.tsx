@@ -14,8 +14,8 @@ export default function MobileProductGroupTabs() {
             onClick={() => setSelectedGroup(group.id)}
             className={`px-4 py-3 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${
               selectedGroup === group.id
-                ? "bg-green-500 text-white border-green-500 shadow-sm shadow-green-200"
-                : "bg-white text-gray-600 border-gray-200 hover:border-green-300"
+                ? "bg-success text-white border-success shadow-sm"
+                : "bg-surface-raised text-secondary border-default hover:border-success"
             }`}
           >
             {group.name}

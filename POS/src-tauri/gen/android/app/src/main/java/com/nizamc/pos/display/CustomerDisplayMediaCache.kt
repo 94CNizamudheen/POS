@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.display
+package com.nizamc.pos.display
 
 import android.content.Context
 import android.util.Log

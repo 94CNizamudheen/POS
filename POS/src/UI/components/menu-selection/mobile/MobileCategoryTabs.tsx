@@ -39,13 +39,13 @@ export default function MobileCategoryTabs() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`flex flex-col items-center gap-1 shrink-0 transition-all`}
+              className="flex flex-col items-center gap-1 shrink-0 transition-all"
             >
               <div
                 className={`w-14 h-14 rounded-full overflow-hidden border-2 transition-all ${
                   isActive
-                    ? "border-green-500 shadow-md shadow-green-100"
-                    : "border-gray-200"
+                    ? "border-success shadow-md"
+                    : "border-default"
                 }`}
               >
                 <img
@@ -56,7 +56,7 @@ export default function MobileCategoryTabs() {
               </div>
               <span
                 className={`text-[10px] font-semibold max-w-15 truncate ${
-                  isActive ? "text-green-600" : "text-gray-500"
+                  isActive ? "text-success" : "text-muted"
                 }`}
               >
                 {cat.name}

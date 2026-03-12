@@ -1,4 +1,4 @@
-package com.hashone.hashoneplat.service
+package com.nizamc.pos.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -12,8 +12,8 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.hashone.hashoneplat.MainActivity
-import com.hashone.hashoneplat.R
+import com.nizamc.pos.MainActivity
+import com.nizamc.pos.R
 
 /**
  * Foreground Service to keep the WebSocket server running on Android
@@ -29,8 +29,8 @@ class WebSocketForegroundService : Service() {
         private const val CHANNEL_NAME = "POS Server"
         private const val NOTIFICATION_ID = 1001
 
-        private const val ACTION_START = "com.hashone.hashoneplat.action.START_WS_SERVICE"
-        private const val ACTION_STOP = "com.hashone.hashoneplat.action.STOP_WS_SERVICE"
+        private const val ACTION_START = "com.nizamc.pos.action.START_WS_SERVICE"
+        private const val ACTION_STOP = "com.nizamc.pos.action.STOP_WS_SERVICE"
 
         private var isRunning = false
 
