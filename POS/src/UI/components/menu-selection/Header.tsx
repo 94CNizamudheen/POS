@@ -81,7 +81,7 @@ export default function Header() {
                     key={order.orderId}
                     onClick={() => {
                       setShowNotifications(false);
-                      navigate("/incoming");
+                      navigate("/pos/incoming");
                     }}
                     className="w-full flex items-start gap-3 px-4 py-3 hover:bg-surface transition text-left"
                   >

@@ -112,6 +112,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             // ── WebSocket ────────────────────────────────────────────────────
+            commands::websocket::broadcast_to_customer_display,
             commands::websocket::broadcast_to_kiosk,
             commands::websocket::broadcast_to_pos,
             commands::websocket::broadcast_to_all,
@@ -143,6 +144,23 @@ pub fn run() {
             commands::printer::get_system_printers,
             commands::printer::print_to_system_printer,
             commands::printer::add_system_printer_to_app,
+            // ── KDS Tickets ──────────────────────────────────────────────────
+            commands::kds_ticket::save_kds_ticket,
+            commands::kds_ticket::get_all_kds_tickets,
+            commands::kds_ticket::get_active_kds_tickets,
+            commands::kds_ticket::get_kds_tickets_by_status,
+            commands::kds_ticket::update_kds_ticket_status,
+            commands::kds_ticket::delete_kds_ticket,
+            // ── KDS Stations ─────────────────────────────────────────────────
+            commands::kds_station::get_kds_stations,
+            commands::kds_station::save_kds_station,
+            commands::kds_station::delete_kds_station,
+            commands::kds_station::get_kds_station_id,
+            commands::kds_station::set_kds_station_id,
+            // ── Queue Tokens ──────────────────────────────────────────────────
+            commands::queue_token::save_queue_token,
+            commands::queue_token::get_active_queue_tokens,
+            commands::queue_token::update_queue_token_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

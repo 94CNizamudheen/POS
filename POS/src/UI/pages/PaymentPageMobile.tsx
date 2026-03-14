@@ -67,7 +67,7 @@ export default function PaymentPageMobile() {
   const quickAmounts = [roundedBase, roundedBase + 5, roundedBase + 10];
 
   useEffect(() => {
-    if (items.length === 0) navigate("/");
+    if (items.length === 0) navigate("/pos");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function PaymentPageMobile() {
     stashWalkupCart([]);
     setPlacing(false);
     setSuccess(true);
-    setTimeout(() => navigate("/"), 2000);
+    setTimeout(() => navigate("/pos"), 2000);
   };
 
   const handleComplete = async () => {
@@ -167,7 +167,7 @@ export default function PaymentPageMobile() {
         }}
       >
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/pos")}
           className="btn-back"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -419,7 +419,7 @@ export default function PaymentPageMobile() {
 
         {/* Back / add more */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/pos")}
           className="w-full mt-2 h-9 text-xs font-medium rounded-xl transition active:scale-95"
           style={{ color: "var(--color-text-secondary)" }}
         >

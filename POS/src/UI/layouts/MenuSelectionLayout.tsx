@@ -18,13 +18,13 @@ function WebView({ children }: { children?: ReactNode }) {
 }
 
 const PAGE_TITLES: Record<string, string> = {
-  "/orders": "Orders",
-  "/incoming": "Incoming Orders",
-  "/settings/printers": "Printer Settings",
-  "/settings/connection": "Connection & Terminals",
-  "/settings": "Settings",
-  "/held-orders": "Held Orders",
-  "/payment": "Payment",
+  "/pos/orders": "Orders",
+  "/pos/incoming": "Incoming Orders",
+  "/pos/settings/printers": "Printer Settings",
+  "/pos/settings/connection": "Connection & Terminals",
+  "/pos/settings": "Settings",
+  "/pos/held-orders": "Held Orders",
+  "/pos/payment": "Payment",
 };
 
 const FULL_SCREEN_PATHS = Object.keys(PAGE_TITLES);
@@ -47,7 +47,7 @@ export default function MenuSelectionLayout() {
     )?.[1] ?? "";
 
   // Payment page manages its own full-screen layout on mobile
-  if (!isDesktop && location.pathname.startsWith("/payment")) {
+  if (!isDesktop && location.pathname.startsWith("/pos/payment")) {
     return <Outlet />;
   }
 
@@ -57,7 +57,7 @@ export default function MenuSelectionLayout() {
       <div className="flex flex-col h-screen bg-gray-50 font-sans">
         <header className="h-14 bg-white border-b border-gray-100 shadow-sm flex items-center gap-3 px-4 shrink-0 z-10">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/pos")}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition shrink-0"
           >
             <ChevronLeft className="w-5 h-5" />

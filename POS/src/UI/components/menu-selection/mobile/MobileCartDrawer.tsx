@@ -240,7 +240,7 @@ export default function MobileCartDrawer({
           <button
             onClick={() => {
               onClose();
-              navigate("/payment", { state: { items } });
+              navigate("/pos/payment", { state: { items } });
             }}
             disabled={items.length === 0}
             className="w-full py-3.5 bg-success text-white font-bold rounded-2xl hover:bg-success transition text-sm shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"

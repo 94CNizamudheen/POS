@@ -81,7 +81,7 @@ export default function ConnectionSettingsPage() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
-          onClick={() => navigate("/settings")}
+          onClick={() => navigate("/pos/settings")}
           className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />

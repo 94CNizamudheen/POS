@@ -84,6 +84,17 @@ pub async fn broadcast_to_all(
     Ok(())
 }
 
+/// Broadcast a message to all connected CUSTOMER_DISPLAY terminals
+#[command]
+pub async fn broadcast_to_customer_display(
+    ws_state: State<'_, WsState>,
+    message: WsMessage,
+) -> Result<(), String> {
+    let terminals = ws_state.server.get_terminals();
+    broadcast_to_terminal_type(&terminals, "CUSTOMER_DISPLAY", &message).await;
+    Ok(())
+}
+
 /// Send a message to a specific terminal by ID
 #[command]
 pub async fn send_to_terminal_cmd(

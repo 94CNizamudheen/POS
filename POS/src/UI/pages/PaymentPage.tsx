@@ -96,7 +96,7 @@ function PaymentPageDesktop() {
 
   // Redirect if no items
   useEffect(() => {
-    if (items.length === 0) navigate("/");
+    if (items.length === 0) navigate("/pos");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Watch for order completion (walk-up or KIOSK WS)
@@ -141,7 +141,7 @@ function PaymentPageDesktop() {
     stashWalkupCart([]);
     setPlacing(false);
     setSuccess(true);
-    setTimeout(() => navigate("/"), 2500);
+    setTimeout(() => navigate("/pos"), 2500);
   };
 
   const handleComplete = async () => {
@@ -208,7 +208,7 @@ function PaymentPageDesktop() {
         {/* Header */}
         <div className="h-14 px-4 flex items-center gap-3 border-b border-gray-100 shrink-0">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/pos")}
             className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
           >
             <ChevronLeft className="w-5 h-5 text-gray-600" />

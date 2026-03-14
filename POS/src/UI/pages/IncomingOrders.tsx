@@ -54,7 +54,7 @@ export default function IncomingOrders() {
       {/* Header */}
       <div className="h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-3 sticky top-0 z-10 shadow-sm">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/pos")}
           className="text-gray-500 hover:text-gray-800 transition text-sm font-semibold"
         >
           ← Back

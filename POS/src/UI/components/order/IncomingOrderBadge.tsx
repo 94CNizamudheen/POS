@@ -9,7 +9,7 @@ export default function IncomingOrderBadge() {
 
   return (
     <button
-      onClick={() => navigate("/incoming")}
+      onClick={() => navigate("/pos/incoming")}
       className="relative w-9 h-9 flex items-center justify-center bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
       title="Incoming orders"
     >

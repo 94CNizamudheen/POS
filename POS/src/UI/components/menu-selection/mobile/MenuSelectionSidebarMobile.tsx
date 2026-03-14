@@ -10,6 +10,7 @@ import {
   Settings,
   ChevronRight,
   X,
+  LogOut,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useOrder } from "@/context/OrderContext";
@@ -17,15 +18,15 @@ import userPng from "@/assets/user.png";
 import logoPng from "@/assets/Dine-in.png";
 
 const navItems = [
-  { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/" },
-  { icon: ShoppingBag, label: "Orders", id: "orders", path: "/orders" },
-  { icon: Bell, label: "Incoming", id: "incoming", path: "/incoming" },
-  { icon: PauseCircle, label: "Hold", id: "held-orders", path: "/held-orders" },
+  { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/pos" },
+  { icon: ShoppingBag, label: "Orders", id: "orders", path: "/pos/orders" },
+  { icon: Bell, label: "Incoming", id: "incoming", path: "/pos/incoming" },
+  { icon: PauseCircle, label: "Hold", id: "held-orders", path: "/pos/held-orders" },
   { icon: Wallet, label: "Wallet", id: "wallet", path: null },
   { icon: History, label: "History", id: "history", path: null },
   { icon: Tag, label: "Promos", id: "promos", path: null },
   { icon: FileText, label: "Bills", id: "bills", path: null },
-  { icon: Settings, label: "Settings", id: "setting", path: "/settings" },
+  { icon: Settings, label: "Settings", id: "setting", path: "/pos/settings" },
 ];
 
 interface MenuSelectionSidebarMobileProps {
@@ -41,7 +42,7 @@ export default function MenuSelectionSidebarMobile({
   const incomingCount = incomingOrders.length;
 
   function isActive(_id: string, path: string | null) {
-    if (path === "/") return location.pathname === "/";
+    if (path === "/pos") return location.pathname === "/pos";
     if (path) return location.pathname.startsWith(path);
     return false;
   }
@@ -141,8 +142,15 @@ export default function MenuSelectionSidebarMobile({
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-subtle">
-        <p className="text-xs text-muted text-center">POS System v1.0</p>
+      <div className="px-5 py-4 border-t border-subtle flex items-center justify-between">
+        <p className="text-xs text-muted">POS System v1.0</p>
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1.5 text-xs font-semibold text-danger px-3 py-1.5 rounded-xl hover:bg-danger-subtle transition"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Exit
+        </button>
       </div>
     </div>
   );

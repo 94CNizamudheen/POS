@@ -11,6 +11,7 @@ import {
   Sun,
   PauseCircle,
   Bell,
+  LogOut,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import userPng from "@/assets/user.png";
@@ -19,16 +20,16 @@ import { useOrder } from "@/context/OrderContext";
 import { useTheme } from "@/context/ThemeContext";
 
 const navItems = [
-  // { icon: Home,          label: "Home",    id: "home",    path: "/"        },
-  { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/" },
-  { icon: ShoppingBag, label: "Orders", id: "orders", path: "/orders" },
-  { icon: Bell, label: "Incoming", id: "incoming", path: "/incoming" },
-  { icon: PauseCircle, label: "Hold", id: "held-orders", path: "/held-orders" },
+  // { icon: Home,          label: "Home",    id: "home",    path: "/pos"        },
+  { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/pos" },
+  { icon: ShoppingBag, label: "Orders", id: "orders", path: "/pos/orders" },
+  { icon: Bell, label: "Incoming", id: "incoming", path: "/pos/incoming" },
+  { icon: PauseCircle, label: "Hold", id: "held-orders", path: "/pos/held-orders" },
   { icon: Wallet, label: "Wallet", id: "wallet", path: null },
   { icon: History, label: "History", id: "history", path: null },
   { icon: Tag, label: "Promos", id: "promos", path: null },
   { icon: FileText, label: "Bills", id: "bills", path: null },
-  { icon: Settings, label: "Setting", id: "setting", path: "/settings" },
+  { icon: Settings, label: "Setting", id: "setting", path: "/pos/settings" },
 ];
 
 interface Props {
@@ -44,7 +45,7 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
 
   function resolveActive(id: string, path: string | null) {
     if (activeNav) return activeNav === id;
-    if (path === "/") return location.pathname === "/";
+    if (path === "/pos") return location.pathname === "/pos";
     if (path) return location.pathname.startsWith(path);
     return false;
   }
@@ -104,7 +105,7 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
         })}
       </nav>
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col items-center gap-2">
         {theme === "dark" ? (
           <button
             onClick={toggleTheme}
@@ -120,6 +121,14 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
             <Moon className="w-3 h-3" /> Dark
           </button>
         )}
+        <button
+          onClick={() => navigate("/")}
+          title="Switch Role"
+          className="flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl text-xs font-medium text-danger hover:bg-danger-subtle transition-all w-full"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Exit</span>
+        </button>
       </div>
     </aside>
   );

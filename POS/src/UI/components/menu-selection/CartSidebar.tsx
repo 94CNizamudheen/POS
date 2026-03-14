@@ -244,7 +244,7 @@ export default function CartSidebar({
 
       {/* Proceed to Payment */}
       <button
-        onClick={() => navigate("/payment", { state: { items } })}
+        onClick={() => navigate("/pos/payment", { state: { items } })}
         disabled={items.length === 0}
         className="w-full py-3 bg-success text-white font-bold rounded-xl hover:bg-success transition text-sm shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >

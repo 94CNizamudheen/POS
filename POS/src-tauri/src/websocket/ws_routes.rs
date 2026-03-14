@@ -62,6 +62,8 @@ pub async fn register_ws_routes(
                 tokio::spawn(async move {
                     send_to_terminal(&terminals, &sender_id, &msg_available).await;
                     broadcast_to_terminal_type(&terminals, "POS", &msg_available).await;
+                    broadcast_to_terminal_type(&terminals, "KDS", &msg_available).await;
+                    broadcast_to_terminal_type(&terminals, "QUEUE", &msg_available).await;
                     log::info!("REQUEST_ASSISTANCE → ORDER_AVAILABLE broadcast");
                 });
             })
@@ -623,6 +625,93 @@ pub async fn register_ws_routes(
                 tokio::spawn(async move {
                     send_to_terminal(&terminals, &target_kiosk_id, &forward).await;
                     log::info!("PULL_KIOSK_CART forwarded to {}", target_kiosk_id);
+                });
+            })
+            .await;
+    }
+
+    // ── queue_call: POS → broadcast to all QUEUE terminals ───────────────────
+    {
+        let ws_state = ws_state.clone();
+        event_bus
+            .subscribe("queue_call", move |msg| {
+                let terminals = ws_state.server.get_terminals();
+                let forward = WsMessage::new("queue_call", msg.payload.clone());
+                tokio::spawn(async move {
+                    broadcast_to_terminal_type(&terminals, "QUEUE", &forward).await;
+                    log::info!("queue_call broadcast to QUEUE terminals");
+                });
+            })
+            .await;
+    }
+
+    // ── queue_served: POS → broadcast to all QUEUE terminals ─────────────────
+    {
+        let ws_state = ws_state.clone();
+        event_bus
+            .subscribe("queue_served", move |msg| {
+                let terminals = ws_state.server.get_terminals();
+                let forward = WsMessage::new("queue_served", msg.payload.clone());
+                tokio::spawn(async move {
+                    broadcast_to_terminal_type(&terminals, "QUEUE", &forward).await;
+                    log::info!("queue_served broadcast to QUEUE terminals");
+                });
+            })
+            .await;
+    }
+
+    // ── workday_started: POS → broadcast to QUEUE + KDS terminals ────────────
+    {
+        let ws_state = ws_state.clone();
+        event_bus
+            .subscribe("workday_started", move |msg| {
+                let terminals = ws_state.server.get_terminals();
+                let forward = WsMessage::new("workday_started", msg.payload.clone());
+                tokio::spawn(async move {
+                    broadcast_to_terminal_type(&terminals, "QUEUE", &forward).await;
+                    broadcast_to_terminal_type(&terminals, "KDS", &forward).await;
+                    log::info!("workday_started broadcast to QUEUE + KDS");
+                });
+            })
+            .await;
+    }
+
+    // ── workday_ended: POS → broadcast to QUEUE + KDS terminals ──────────────
+    {
+        let ws_state = ws_state.clone();
+        event_bus
+            .subscribe("workday_ended", move |msg| {
+                let terminals = ws_state.server.get_terminals();
+                let forward = WsMessage::new("workday_ended", msg.payload.clone());
+                tokio::spawn(async move {
+                    broadcast_to_terminal_type(&terminals, "QUEUE", &forward).await;
+                    broadcast_to_terminal_type(&terminals, "KDS", &forward).await;
+                    log::info!("workday_ended broadcast to QUEUE + KDS");
+                });
+            })
+            .await;
+    }
+
+    // ── CLEAR_KIOSK_DATA: POS → forward to target KIOSK or all KIOSKs ────────
+    {
+        let ws_state = ws_state.clone();
+        event_bus
+            .subscribe("CLEAR_KIOSK_DATA", move |msg| {
+                let target_kiosk_id: Option<String> = msg
+                    .payload
+                    .get("targetKioskId")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                let terminals = ws_state.server.get_terminals();
+                let forward = WsMessage::new("CLEAR_KIOSK_DATA", msg.payload.clone());
+                tokio::spawn(async move {
+                    if let Some(kiosk_id) = target_kiosk_id {
+                        send_to_terminal(&terminals, &kiosk_id, &forward).await;
+                        log::info!("CLEAR_KIOSK_DATA forwarded to {}", kiosk_id);
+                    } else {
+                        broadcast_to_terminal_type(&terminals, "KIOSK", &forward).await;
+                        log::info!("CLEAR_KIOSK_DATA broadcast to all KIOSKs");
+                    }
                 });
             })
             .await;

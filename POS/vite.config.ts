@@ -14,6 +14,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("src", import.meta.url)),
+      "@data": fileURLToPath(new URL("src/data", import.meta.url)),
+      "@context": fileURLToPath(new URL("src/context", import.meta.url)),
       "@ui": fileURLToPath(new URL("src/UI", import.meta.url)),
       "@assets": fileURLToPath(new URL("src/assets", import.meta.url)),
       "@db": fileURLToPath(new URL("src/db", import.meta.url)),

@@ -211,7 +211,7 @@ export default function PrinterSettingsPage() {
       {/* Page header */}
       <div className="flex items-center gap-3 mb-6">
         <button
-          onClick={() => navigate("/settings")}
+          onClick={() => navigate("/pos/settings")}
           className="btn-back shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
