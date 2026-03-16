@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wifi, WifiOff, Settings } from "lucide-react";
+import { Wifi, WifiOff, Settings, ArrowLeftRight } from "lucide-react";
+import SwitchDeviceModal from "@/UI/components/common/SwitchDeviceModal";
 import { useQueueWebSocket } from "@/context/queue/QueueWebSocketContext";
 
 export default function QueueHeader() {
   const navigate = useNavigate();
   const { isConnected, isConnecting } = useQueueWebSocket();
+  const [switchOpen, setSwitchOpen] = useState(false);
 
   return (
+    <>
     <div className="flex items-center justify-between px-6 py-3 bg-gray-900 border-b border-gray-700">
       <div className="flex items-center gap-3">
         <span className="text-white font-bold text-xl tracking-wide">Queue Display</span>
@@ -36,6 +40,16 @@ export default function QueueHeader() {
           <Settings size={18} />
         </button>
 
+        {/* Switch Device */}
+        <button
+          onClick={() => setSwitchOpen(true)}
+          title="Switch Device"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          <ArrowLeftRight size={14} />
+          Switch
+        </button>
+
         <button
           onClick={() => navigate("/")}
           className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
@@ -44,5 +58,12 @@ export default function QueueHeader() {
         </button>
       </div>
     </div>
+
+    <SwitchDeviceModal
+      open={switchOpen}
+      onClose={() => setSwitchOpen(false)}
+      currentDevice="queue"
+    />
+    </>
   );
 }

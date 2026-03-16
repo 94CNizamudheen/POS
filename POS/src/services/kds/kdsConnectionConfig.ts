@@ -1,26 +1,22 @@
-import { appStateDb } from "@/services/appStateDb";
-
-const KDS_WS_URL_KEY = "kds_ws_url";
-const KDS_TERMINAL_ID_KEY = "kds_terminal_id";
+import { appStateApi } from "@/services/appStateDb";
 
 export async function getKdsWsUrl(): Promise<string | null> {
-  const v = await appStateDb.get(KDS_WS_URL_KEY);
-  return v || null;
+  const state = await appStateApi.get();
+  return state.kds_ws_url || null;
 }
 
 export async function setKdsWsUrl(url: string): Promise<void> {
-  await appStateDb.set(KDS_WS_URL_KEY, url);
+  await appStateApi.setKdsWsUrl(url);
 }
 
 export async function clearKdsWsUrl(): Promise<void> {
-  await appStateDb.remove(KDS_WS_URL_KEY);
+  await appStateApi.setKdsWsUrl("");
 }
 
 export async function getKdsTerminalId(): Promise<string> {
-  let id = await appStateDb.get(KDS_TERMINAL_ID_KEY);
-  if (!id) {
-    id = `KDS-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    await appStateDb.set(KDS_TERMINAL_ID_KEY, id);
-  }
+  const state = await appStateApi.get();
+  if (state.kds_terminal_id) return state.kds_terminal_id;
+  const id = `KDS-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  await appStateApi.setKdsTerminalId(id);
   return id;
 }

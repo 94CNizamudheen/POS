@@ -11,11 +11,14 @@ import {
   ChevronRight,
   X,
   LogOut,
+  ArrowLeftRight,
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useOrder } from "@/context/OrderContext";
 import userPng from "@/assets/user.png";
 import logoPng from "@/assets/Dine-in.png";
+import SwitchDeviceModal from "@/UI/components/common/SwitchDeviceModal";
 
 const navItems = [
   { icon: UtensilsCrossed, label: "Menu", id: "menu", path: "/pos" },
@@ -40,6 +43,7 @@ export default function MenuSelectionSidebarMobile({
   const location = useLocation();
   const { incomingOrders } = useOrder();
   const incomingCount = incomingOrders.length;
+  const [switchOpen, setSwitchOpen] = useState(false);
 
   function isActive(_id: string, path: string | null) {
     if (path === "/pos") return location.pathname === "/pos";
@@ -54,6 +58,7 @@ export default function MenuSelectionSidebarMobile({
   }
 
   return (
+    <>
     <div className="h-full w-full bg-surface-raised flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-subtle">
@@ -141,6 +146,20 @@ export default function MenuSelectionSidebarMobile({
         })}
       </div>
 
+      {/* Switch Device */}
+      <div className="px-4 pb-2">
+        <button
+          onClick={() => setSwitchOpen(true)}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-surface hover:bg-surface-sunken border border-default transition-all active:scale-[0.98]"
+        >
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <ArrowLeftRight className="w-4 h-4 text-primary" />
+          </div>
+          <span className="flex-1 text-sm font-semibold text-secondary text-left">Switch Device</span>
+          <ChevronRight className="w-4 h-4 text-disabled" />
+        </button>
+      </div>
+
       {/* Footer */}
       <div className="px-5 py-4 border-t border-subtle flex items-center justify-between">
         <p className="text-xs text-muted">POS System v1.0</p>
@@ -153,5 +172,12 @@ export default function MenuSelectionSidebarMobile({
         </button>
       </div>
     </div>
+
+    <SwitchDeviceModal
+      open={switchOpen}
+      onClose={() => setSwitchOpen(false)}
+      currentDevice="pos"
+    />
+    </>
   );
 }

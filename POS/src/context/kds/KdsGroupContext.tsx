@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { appStateDb } from "@/services/appStateDb";
+import { appStateApi } from "@/services/appStateDb";
 
 export interface KdsGroup {
   id: string;
@@ -17,19 +17,23 @@ interface KdsGroupContextType {
 
 const KdsGroupContext = createContext<KdsGroupContextType | undefined>(undefined);
 
-export const GROUPS_KEY = "kds_groups";
-
 export function KdsGroupProvider({ children }: { children: ReactNode }) {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [groups, setGroups] = useState<KdsGroup[]>([]);
 
   useEffect(() => {
-    appStateDb.getJson<KdsGroup[]>(GROUPS_KEY, []).then(setGroups);
+    appStateApi.get().then((s) => {
+      try {
+        setGroups(s.kds_groups ? JSON.parse(s.kds_groups) : []);
+      } catch {
+        setGroups([]);
+      }
+    });
   }, []);
 
   const saveGroups = async (updated: KdsGroup[]) => {
     setGroups(updated);
-    await appStateDb.setJson(GROUPS_KEY, updated);
+    await appStateApi.setKdsGroups(JSON.stringify(updated));
   };
 
   return (

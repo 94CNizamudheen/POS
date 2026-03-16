@@ -2,17 +2,121 @@ use crate::{db, AppDbPath};
 use rusqlite::Connection;
 use tauri::{command, AppHandle, State};
 
-/// Clears every user table in the database automatically.
-///
-/// Opens its own connection using the shared DB path — completely independent
-/// from any module (orders, printer, etc.). Uses sqlite_master to discover
-/// all tables at runtime, so any table added in the future is cleared
-/// automatically with zero code changes.
+/// Get the full app state as a typed struct.
+#[command]
+pub fn get_app_state(app: AppHandle) -> Result<db::models::app_state::AppState, String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::get_app_state(&conn).map_err(|e| e.to_string())
+}
+
+// ── KDS ───────────────────────────────────────────────────────────────────────
+
+#[command]
+pub fn set_kds_ws_url(app: AppHandle, ws_url: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "kds_ws_url", &ws_url)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_kds_terminal_id(app: AppHandle, terminal_id: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "kds_terminal_id", &terminal_id)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_kds_display_settings(app: AppHandle, settings: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "kds_display_settings", &settings)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_kds_groups(app: AppHandle, groups: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "kds_groups", &groups)
+        .map_err(|e| e.to_string())
+}
+
+// ── Queue Display ─────────────────────────────────────────────────────────────
+
+#[command]
+pub fn set_queue_ws_url(app: AppHandle, ws_url: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "queue_ws_url", &ws_url)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_queue_terminal_id(app: AppHandle, terminal_id: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "queue_terminal_id", &terminal_id)
+        .map_err(|e| e.to_string())
+}
+
+// ── Customer Display ──────────────────────────────────────────────────────────
+
+#[command]
+pub fn set_cd_ws_url(app: AppHandle, ws_url: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "cd_ws_url", &ws_url)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_cd_terminal_id(app: AppHandle, terminal_id: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "cd_terminal_id", &terminal_id)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_cd_settings(app: AppHandle, settings: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "cd_settings", &settings)
+        .map_err(|e| e.to_string())
+}
+
+// ── Kiosk ─────────────────────────────────────────────────────────────────────
+
+#[command]
+pub fn set_kiosk_pos_url(app: AppHandle, pos_url: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "kiosk_pos_url", &pos_url)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_kiosk_terminal_id(app: AppHandle, terminal_id: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "kiosk_terminal_id", &terminal_id)
+        .map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn set_kiosk_position(app: AppHandle, position: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "kiosk_position", &position)
+        .map_err(|e| e.to_string())
+}
+
+// ── Device ────────────────────────────────────────────────────────────────────
+
+#[command]
+pub fn set_device_role(app: AppHandle, role: String) -> Result<(), String> {
+    let conn = db::connection(&app);
+    db::models::app_state_repo::update_app_state(&conn, "device_role", &role)
+        .map_err(|e| e.to_string())
+}
+
+// ── Data management ───────────────────────────────────────────────────────────
+
+/// Clears every user table, then re-seeds the app_state row.
 #[command]
 pub fn clear_all_data(db_path: State<'_, AppDbPath>) -> Result<(), String> {
     let conn = Connection::open(&db_path.0).map_err(|e| e.to_string())?;
 
-    // Discover every user table — sqlite_master holds ALL tables in this DB file
     let mut stmt = conn
         .prepare(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
@@ -38,20 +142,13 @@ pub fn clear_all_data(db_path: State<'_, AppDbPath>) -> Result<(), String> {
     conn.execute("PRAGMA foreign_keys = ON", [])
         .map_err(|e| e.to_string())?;
 
+    // Re-seed the app_state single row
+    conn.execute(
+        "INSERT OR IGNORE INTO app_state (id, kiosk_position) VALUES (1, 'DISTANCE')",
+        [],
+    )
+    .ok();
+
     log::info!("clear_all_data: cleared {} table(s)", tables.len());
     Ok(())
-}
-
-/// Get a value from the app_state table by key.
-#[command]
-pub fn get_app_state(app: AppHandle, key: String) -> Result<Option<String>, String> {
-    let conn = db::connection(&app);
-    db::models::app_state_repo::get(&conn, &key).map_err(|e| e.to_string())
-}
-
-/// Set (upsert) a value in the app_state table.
-#[command]
-pub fn set_app_state(app: AppHandle, key: String, value: String) -> Result<(), String> {
-    let conn = db::connection(&app);
-    db::models::app_state_repo::set(&conn, &key, &value).map_err(|e| e.to_string())
 }

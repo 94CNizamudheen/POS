@@ -128,9 +128,26 @@ pub fn run() {
             commands::order_store::get_all_held_orders,
             commands::order_store::delete_held_order,
             // ── App state ────────────────────────────────────────────────────
-            commands::app_state::clear_all_data,
             commands::app_state::get_app_state,
-            commands::app_state::set_app_state,
+            commands::app_state::clear_all_data,
+            // KDS
+            commands::app_state::set_kds_ws_url,
+            commands::app_state::set_kds_terminal_id,
+            commands::app_state::set_kds_display_settings,
+            commands::app_state::set_kds_groups,
+            // Queue Display
+            commands::app_state::set_queue_ws_url,
+            commands::app_state::set_queue_terminal_id,
+            // Customer Display
+            commands::app_state::set_cd_ws_url,
+            commands::app_state::set_cd_terminal_id,
+            commands::app_state::set_cd_settings,
+            // Kiosk
+            commands::app_state::set_kiosk_pos_url,
+            commands::app_state::set_kiosk_terminal_id,
+            commands::app_state::set_kiosk_position,
+            // Device
+            commands::app_state::set_device_role,
             // ── Printer ──────────────────────────────────────────────────────
             commands::printer::get_printers,
             commands::printer::get_active_printers,

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { ThemeSettings } from "@/UI/kds/tickets/ticket.types";
-import { appStateDb } from "@/services/appStateDb";
+import { appStateApi } from "@/services/appStateDb";
 
 interface SettingsContextType {
   settings: ThemeSettings;
@@ -55,16 +55,21 @@ const defaultSettings: ThemeSettings = {
   assignedGroupIds: "[]",
 };
 
-const SETTINGS_KEY = "kds_display_settings";
-
 export function KdsSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<ThemeSettings>(defaultSettings);
   const [loaded, setLoaded] = useState(false);
 
   // Load from DB on mount
   useEffect(() => {
-    appStateDb.getJson<Partial<ThemeSettings>>(SETTINGS_KEY, {}).then((stored) => {
-      setSettings({ ...defaultSettings, ...stored });
+    appStateApi.get().then((s) => {
+      try {
+        const stored: Partial<ThemeSettings> = s.kds_display_settings
+          ? JSON.parse(s.kds_display_settings)
+          : {};
+        setSettings({ ...defaultSettings, ...stored });
+      } catch {
+        setSettings(defaultSettings);
+      }
       setLoaded(true);
     });
   }, []);
@@ -72,7 +77,7 @@ export function KdsSettingsProvider({ children }: { children: ReactNode }) {
   // Persist to DB whenever settings change (skip initial default before load)
   useEffect(() => {
     if (!loaded) return;
-    appStateDb.setJson(SETTINGS_KEY, settings);
+    appStateApi.setKdsDisplaySettings(JSON.stringify(settings));
   }, [settings, loaded]);
 
   const updateSettings = (newSettings: Partial<ThemeSettings>) => {
@@ -81,7 +86,7 @@ export function KdsSettingsProvider({ children }: { children: ReactNode }) {
 
   const resetSettings = () => {
     setSettings(defaultSettings);
-    appStateDb.remove(SETTINGS_KEY);
+    appStateApi.setKdsDisplaySettings("{}");
   };
 
   return (

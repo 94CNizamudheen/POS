@@ -12,12 +12,15 @@ import {
   PauseCircle,
   Bell,
   LogOut,
+  ArrowLeftRight,
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import userPng from "@/assets/user.png";
 import logoPng from "@/assets/Dine-in.png";
 import { useOrder } from "@/context/OrderContext";
 import { useTheme } from "@/context/ThemeContext";
+import SwitchDeviceModal from "@/UI/components/common/SwitchDeviceModal";
 
 const navItems = [
   // { icon: Home,          label: "Home",    id: "home",    path: "/pos"        },
@@ -42,6 +45,7 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
   const { incomingOrders } = useOrder();
   const { theme, toggleTheme } = useTheme();
   const incomingCount = incomingOrders.length;
+  const [switchOpen, setSwitchOpen] = useState(false);
 
   function resolveActive(id: string, path: string | null) {
     if (activeNav) return activeNav === id;
@@ -51,6 +55,7 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
   }
 
   return (
+    <>
     <aside className="w-[7%] h-full bg-surface-raised border-r border-subtle flex flex-col items-center py-4 gap-2 shrink-0">
       {/* Logo */}
       <div className="flex flex-col items-center mb-1 px-2">
@@ -106,6 +111,18 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
       </nav>
 
       <div className="mt-auto flex flex-col items-center gap-2">
+        {/* Switch Device */}
+        <button
+          onClick={() => setSwitchOpen(true)}
+          title="Switch Device"
+          className="flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl text-[10px] font-medium text-muted hover:bg-surface-sunken hover:text-primary transition-all w-full"
+        >
+          <ArrowLeftRight className="w-4 h-4" />
+          <span>Switch</span>
+        </button>
+
+        <div className="w-3/4 h-px bg-subtle" />
+
         {theme === "dark" ? (
           <button
             onClick={toggleTheme}
@@ -131,5 +148,12 @@ export default function MenuSelectionSidebar({ activeNav }: Props) {
         </button>
       </div>
     </aside>
+
+    <SwitchDeviceModal
+      open={switchOpen}
+      onClose={() => setSwitchOpen(false)}
+      currentDevice="pos"
+    />
+    </>
   );
 }

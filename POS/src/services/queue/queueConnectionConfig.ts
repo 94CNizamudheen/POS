@@ -1,26 +1,22 @@
-import { appStateDb } from "@/services/appStateDb";
-
-const QUEUE_WS_URL_KEY = "queue_ws_url";
-const QUEUE_TERMINAL_ID_KEY = "queue_terminal_id";
+import { appStateApi } from "@/services/appStateDb";
 
 export async function getQueueWsUrl(): Promise<string | null> {
-  const v = await appStateDb.get(QUEUE_WS_URL_KEY);
-  return v || null;
+  const state = await appStateApi.get();
+  return state.queue_ws_url || null;
 }
 
 export async function setQueueWsUrl(url: string): Promise<void> {
-  await appStateDb.set(QUEUE_WS_URL_KEY, url);
+  await appStateApi.setQueueWsUrl(url);
 }
 
 export async function clearQueueWsUrl(): Promise<void> {
-  await appStateDb.remove(QUEUE_WS_URL_KEY);
+  await appStateApi.setQueueWsUrl("");
 }
 
 export async function getQueueTerminalId(): Promise<string> {
-  let id = await appStateDb.get(QUEUE_TERMINAL_ID_KEY);
-  if (!id) {
-    id = `QUEUE-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    await appStateDb.set(QUEUE_TERMINAL_ID_KEY, id);
-  }
+  const state = await appStateApi.get();
+  if (state.queue_terminal_id) return state.queue_terminal_id;
+  const id = `QUEUE-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  await appStateApi.setQueueTerminalId(id);
   return id;
 }
